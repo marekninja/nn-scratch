@@ -9,4 +9,7 @@ add_executable(pv021_project
         main.cpp
         main.h
         Net.cpp
-        Net.h)
+        Net.h
+        Csv.cpp
+        Csv.h
+        )

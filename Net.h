@@ -8,7 +8,8 @@
 
 class Net {
 public:
-    Net(topology);
+//    topology
+    Net();
 //    input shape 28*28 = 784 vals
 //tiez by sa dalo pouzit std::vector<double>
     void forward(double input[]);
