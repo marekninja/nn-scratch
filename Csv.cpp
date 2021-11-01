@@ -42,7 +42,7 @@ vector<vector<double>> Csv::load(string path_to_file) {
     return output;
 }
 
-void Csv::save(string path_to_file, vector<vector<double>> data) {
+void Csv::save(string path_to_file,const vector<vector<double>>& data) {
     cout << "saving dataset..." << endl;
 
     ofstream outputFile(path_to_file);

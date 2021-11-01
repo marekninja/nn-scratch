@@ -17,8 +17,11 @@ public: Csv();
 
     ///Saves data into csv file
     ///Does not create headers
-    void save(string path_to_file, vector<vector<double>> data);
+    void save(string path_to_file,const vector<vector<double>>& data);
 
+    ///Scales dataset by scaleVal
+    ///Scaling is division: old/scaleVal=scaledVal
+    ///result is in interval [0,255]
     void scaleData(vector<vector<double>> &vector, double scaleVal);
 
     void scaleOne(vector<double> &vector, double scaleVal);

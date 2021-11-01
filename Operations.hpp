@@ -50,6 +50,12 @@ public:
     };
 
 //    Matrix();
+
+    Matrix(){
+        numRows=0;
+        numCols=0;
+        matData={};
+    }
     virtual ~Matrix(){};
 
 //    void fillup(int num_rows, int num_cols, const vector<vector<T>> &mat_data);
@@ -74,7 +80,7 @@ public:
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < cols; ++j) {
                 for (int k = 0; k < numCols; ++k) {
-//                result in one cell is sum of mymatrix[row,col] othetmatrix[col]
+//                result in one cell is sum of mymatrix[row,col] othermatrix[col]
 //                result is multiplication of
                     result.matData[i][j] += matData[i][k] * other.matData[k][j];
                 }
@@ -93,7 +99,7 @@ public:
         Matrix result(rows, cols);
         for (int i = 0; i < cols; ++i) {
             for (int j = 0; j < rows; ++j) {
-                result.matData[i][j] += this->matData[i][j] * other.matData[i][j];
+                result.matData[i][j] = this->matData[i][j] + other.matData[i][j];
             }
         }
         return result;

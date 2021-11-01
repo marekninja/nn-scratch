@@ -34,7 +34,7 @@ int main(){
 //            cout << results[i][j] << " ";
 //        }
 //    }
-    std::vector<std::vector<double>> A{{1.0,0.0,2.0},{-1.0,3.0,1.0}};
+    vector<vector<double>> A{{1.0,0.0,2.0},{-1.0,3.0,1.0}};
     vector<vector<double>> B{{3,1},{2,1},{1,0}};
 
 
@@ -52,9 +52,14 @@ int main(){
     Matrix<double> result2 = matrixB.multiply(matrixA);
     result2.print();
 
+    vector<vector<double>> C{{1.0,0.0},{-1.0,3.0}};
+    vector<vector<double>> D{{3,1},{2,1}};
 
+    Matrix<double> matrixC(2,2,C);
+    Matrix<double> matrixD(2,2,D);
+    matrixC.add(matrixD).print();
 
-
-    Net myNet = Net();
-    cout << "Ahoj!";
+    Net myNet = Net({784,1024,9});
+    myNet.forward({});
+    myNet.backward({});
 }
