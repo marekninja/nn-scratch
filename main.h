@@ -5,6 +5,10 @@
 #ifndef SRC_MAIN_H
 #define SRC_MAIN_H
 
+#include "Net.h"
+#include "Csv.h"
+#include "Operations.hpp"
+
 class main {
 };
 

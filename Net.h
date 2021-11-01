@@ -9,6 +9,8 @@
 class Net {
 public:
 //    topology
+// batch size treba implementovat
+
     Net();
 //    input shape 28*28 = 784 vals
 //tiez by sa dalo pouzit std::vector<double>
