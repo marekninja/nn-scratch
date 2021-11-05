@@ -13,7 +13,7 @@ using namespace std;
 Csv::Csv() {
 }
 
-vector<vector<double>> Csv::load(string path_to_file) {
+Matrix<double> Csv::load(string path_to_file) {
     cout << "loading dataset..." << endl;
 
     ifstream inputFile(path_to_file);
@@ -39,7 +39,9 @@ vector<vector<double>> Csv::load(string path_to_file) {
     }
     inputFile.close();
 
-    return output;
+    Matrix<double> dataset(output.size(),output[0].size(),output);
+
+    return dataset;
 }
 
 void Csv::save(string path_to_file,const vector<vector<double>>& data) {

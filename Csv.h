@@ -6,6 +6,7 @@
 #define PV021_PROJECT_CSV_H
 using namespace std;
 
+#include "Operations.hpp"
 #include <vector>
 #include <string>
 
@@ -13,7 +14,8 @@ class Csv {
 public: Csv();
     ///Loads csv file into vector of vectors
     ///Does not support headers
-    vector<vector<double>> load(string path_to_file);
+    /// Matrix is [1row x NumExamples Cols]
+    Matrix<double> load(string path_to_file);
 
     ///Saves data into csv file
     ///Does not create headers

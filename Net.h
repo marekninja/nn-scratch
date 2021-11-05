@@ -14,16 +14,27 @@ class Net {
 private:
     ///network architecture {1,1,1} means 1 input neuron, 1 hidden, 1 output
     vector<int> architecture;
+    double batchSize;
+    double learningRate;
 
     ///vector of matrices of (incoming) weights
     vector<Matrix<double>> weightMatrices;
 
     ///vector of matrices of biases of neurons
+    ///weight Matrix
+    ///numRows = number of neurons in previous layer
+    ///numCols = number of neurons in actual layer
     vector<Matrix<double>> biasMatrices;
 
     ///vector of activations of forward pass of network
     ///this depends also on batch-size
-    vector<Matrix<double>> activationMatrices;
+    ///for each layer, for each example,
+    /// Matrix is [1row x NumNeurons Cols]
+    /// 1 row = 1 example
+    vector<Matrix<double>> activations;
+
+    static double relu(const double& example);
+
 
 public:
 //    topology
@@ -35,14 +46,19 @@ public:
      * Input is network architecture:
      * {1,1,1} means 1 input neuron, 1 hidden, 1 output
      */
-    Net(const vector<int>& arch);
+    Net(const vector<int>& arch, const int& batch_size, const double& learning_rate);
 
     /*
      * Forward function
      *
-     * Takes as input BATCH of training examples
+     * Takes input BATCH of training examples
+     * Matrix:
+     *      vals
+     * e1 1 2 0 3
+     * e2 0 4 0 0
+     * e3 ...
      */
-    void forward(const vector<vector<double>>& input);
+    void forward(const Matrix<double>& input);
 
     /*
      * Backwards pass - defines gradient descent

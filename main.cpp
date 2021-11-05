@@ -9,8 +9,9 @@ using namespace std;
 
 int main(){
 
-//    Csv csv = Csv();
-//    vector<vector<double>> trainVectors = csv.load("..\\..\\data\\fashion_mnist_train_vectors.csv");
+    Csv csv = Csv();
+    Matrix<double> trainVectors = csv.load("..\\..\\data\\fashion_mnist_train_vectors.csv");
+    vector<Matrix<double>> batches = trainVectors.splitToBatches(1000);
 //    vector<double> last = trainVectors[trainVectors.size()-1];
 //    vector<vector<double>> results{{10},{20},{30}};
 
@@ -59,7 +60,13 @@ int main(){
     Matrix<double> matrixD(2,2,D);
     matrixC.add(matrixD).print();
 
-    Net myNet = Net({784,1024,9});
-    myNet.forward({});
+
+    Net myNet = Net({784,1024,10},1,0.001);
+    myNet.forward(batches[0]);
     myNet.backward({});
+//
+//    vector<double> vec({2});
+//    vector<double> vec2({1,2,3});
+//    vector<double> vec3 = vec * vec2;
+
 }
