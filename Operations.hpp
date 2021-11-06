@@ -107,15 +107,77 @@ public:
         return result;
     };
 
+    Matrix<T> transpose(){
+        Matrix result(numCols, numRows);
+
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                result(j,i) = matData[i][j];
+            }
+        }
+        return result;
+    }
+
+    Matrix<T> flatMeanCols(){
+        Matrix result(1, numCols);
+
+        for (int i = 0; i < numCols; ++i) {
+            for (int j = 0; j < numRows; ++j) {
+                result(0,i) += matData[j][i];
+            }
+            result(0,i) = result(0,i) / numRows;
+        }
+        return result;
+    }
+
+    Matrix<T> flatMeanRows(){
+        Matrix result(numRows, 1);
+
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                result(i,0) += matData[i][j];
+            }
+            result(i,0) = result(i,0) / numCols;
+        }
+        return result;
+    }
+
+    Matrix<T> multiplyCells(const Matrix<T>& other){
+        if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
+            throw runtime_error("Can not multiplyCells() matrices of different shape!");
+        }
+        Matrix result(numRows, numCols);
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result.matData[i][j] = this->matData[i][j] + other.matData[i][j];
+                result(i,j) = matData[i][j] * other(i,j);
+            }
+        }
+        return result;
+    }
+
+    Matrix<T> multiplyNum(const double& num){
+        Matrix result(numRows, numCols);
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result.matData[i][j] = this->matData[i][j] + other.matData[i][j];
+                result(i,j) = matData[i][j] * num;
+            }
+        }
+        return result;
+    }
+
+
     Matrix<T> add(const Matrix &other){
         if (this->getNumRows() != other.getNumRows() or this->getNumCols() != other.getNumCols()){
-            throw runtime_error("Can not add matrices of different shape!");
+            throw runtime_error("Can not add() matrices of different shape!");
         }
         int cols = numCols;
         int rows = numRows;
         Matrix result(rows, cols);
-        for (int i = 0; i < cols; ++i) {
-            for (int j = 0; j < rows; ++j) {
+
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
 //                result.matData[i][j] = this->matData[i][j] + other.matData[i][j];
                 result(i,j) = this->matData[i][j] + other(i,j);
             }
@@ -123,28 +185,66 @@ public:
         return result;
     };
 
+    Matrix<T> minus(const Matrix &other){
+        if ((this->getNumRows() != other.getNumRows()) || (this->getNumCols() != other.getNumCols())){
+            throw runtime_error("Can not minus() matrices of different shape!");
+        }
+        int cols = numCols;
+        int rows = numRows;
+        Matrix result(rows, cols);
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+//                result.matData[i][j] = this->matData[i][j] + other.matData[i][j];
+                result(i,j) = this->matData[i][j] - other(i,j);
+            }
+        }
+        return result;
+    };
+
     //Addition of 1 row matrix to every row
-    Matrix<T> addToRow(const Matrix& row){
+    Matrix<T> addToCol(const Matrix& col){
         int cols = numCols;
         int rows = numRows;
         Matrix result(rows, cols);
 
         for (int i = 0; i < numRows; ++i) {
             for (int j = 0; j < numCols; ++j) {
-                result(i,j) = this->matData[i][j] + row(0,j);
+                result(i,j) = this->matData[i][j] + col(i,0);
             }
         }
         return result;
     }
 
 
-    void apply(std::function<T(T&)> func){
+    void apply(std::function<T(const T&)> func){
+//        cout << "appy relu" << endl;
+
         for (int i = 0; i < numRows; ++i) {
             for (int j = 0; j < numCols; ++j) {
                 matData[i][j] = func(matData[i][j]);
             }
         }
     }
+
+    void apply(std::function<void (vector<T>&)> func){
+//        cout << "apply softmax" << endl;
+        for (int i = 0; i < numRows; ++i) {
+            func(matData[i]);
+        }
+    }
+
+    void applySoftmax(std::function<void (vector<T>&)> func){
+//        cout << "apply softmax" << endl;
+
+        Matrix<T> copy = (*this).transpose();
+
+        for (int i = 0; i < numCols; ++i) {
+            func(copy.matData[i]);
+        }
+        copy = copy.transpose();
+        matData = copy.matData;
+    }
+
 
     vector<Matrix<T>> splitToBatches(int batch_size){
         if (numRows% batch_size != 0){

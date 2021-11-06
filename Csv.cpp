@@ -13,7 +13,7 @@ using namespace std;
 Csv::Csv() {
 }
 
-Matrix<double> Csv::load(string path_to_file) {
+Matrix<double> Csv::load(const string& path_to_file, const int& part) {
     cout << "loading dataset..." << endl;
 
     ifstream inputFile(path_to_file);
@@ -36,6 +36,45 @@ Matrix<double> Csv::load(string path_to_file) {
         }
 
         output.push_back(oneLine);
+        if (output.size()+1 == part+1){
+            break;
+        }
+
+    }
+    inputFile.close();
+
+    Matrix<double> dataset(output.size(),output[0].size(),output);
+
+    return dataset;
+}
+
+Matrix<double> Csv::loadOneHot(const string& path_to_file, const int& part) {
+    cout << "loading dataset..." << endl;
+
+    ifstream inputFile(path_to_file);
+
+    if (!inputFile.is_open()) {
+        throw runtime_error("Could not open file!");
+    };
+
+    vector <vector<double>> output;
+    string line;
+
+    while (getline(inputFile, line)) {
+        vector<double> oneLine(10,0.0);
+
+        stringstream ss(line);
+        string valString;
+
+        while (getline(ss, valString, ',')) {
+            oneLine[stoi(valString)] = 1;
+//            oneLine.push_back(stod(valString, nullptr));
+        }
+
+        output.push_back(oneLine);
+        if (output.size()+1 == part+1){
+            break;
+        }
     }
     inputFile.close();
 
@@ -84,3 +123,5 @@ void Csv::scaleOne(vector<double> &vector, double scaleVal) {
         j = j / scaleVal;
     }
 }
+
+

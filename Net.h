@@ -6,6 +6,7 @@
 #define SRC_NET_H
 
 using namespace std;
+
 #include <vector>
 #include "Operations.hpp"
 
@@ -29,11 +30,35 @@ private:
     ///vector of activations of forward pass of network
     ///this depends also on batch-size
     ///for each layer, for each example,
-    /// Matrix is [1row x NumNeurons Cols]
-    /// 1 row = 1 example
+    /// Matrix is [NumNeurons x Example Cols]
+    /// 1 row = 1 neuron on layer
+    ///     examples
+    ///n1 0.3 0.4 0.6 ...
+    ///n2
+    ///n3
+    ///...
     vector<Matrix<double>> activations;
 
-    static double relu(const double& example);
+    ///same as activations, but without activation function applied
+    /// only for storage purps.
+    vector<Matrix<double>> innerPotentials;
+
+    double Vdw = 0.0;
+    double Sdw = 0.0;
+    double Vdb = 0.0;
+    double Sdb = 0.0;
+    double beta1;
+    double beta2;
+    double epsilon;
+
+
+    static double relu(const double &example);
+    static double drelu(const double &ex);
+
+    static void softmax(vector<double> &output);
+    static void dsoftmax(vector<double> &output);
+
+    double batchCrossEntropy(const Matrix<double>& target);
 
 
 public:
@@ -45,8 +70,12 @@ public:
      *
      * Input is network architecture:
      * {1,1,1} means 1 input neuron, 1 hidden, 1 output
+     *
+     * hidden neurons use ReLU activations
+     * output is SoftMax
      */
-    Net(const vector<int>& arch, const int& batch_size, const double& learning_rate);
+    Net(const vector<int> &arch, const int &batch_size,
+        const double &learning_rate, double beta_1=0.9, double beta_2=0.999, double epsilon_v=0.00000008);
 
     /*
      * Forward function
@@ -58,14 +87,20 @@ public:
      * e2 0 4 0 0
      * e3 ...
      */
-    void forward(const Matrix<double>& input);
+    void forward(const Matrix<double> &input);
 
     /*
      * Backwards pass - defines gradient descent
      *
-     * Takes as input batch of target values
+     * Takes input batch of target values one-hot encoded
+     *      classes
+     * ex1 0 0 0 1 0 0 0 0 0
+     * ex2 1 ...
+     * ex3 ...
      */
-    void backward(const vector<double>& target);
+    double backward(Matrix<double> &target);
+
+    Matrix<double> results();
 };
 
 

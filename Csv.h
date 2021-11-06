@@ -15,7 +15,9 @@ public: Csv();
     ///Loads csv file into vector of vectors
     ///Does not support headers
     /// Matrix is [1row x NumExamples Cols]
-    Matrix<double> load(string path_to_file);
+    Matrix<double> load(const string& path_to_file, const int& part=INT32_MAX);
+
+    Matrix<double> loadOneHot(const string& path_to_file, const int& part=INT32_MAX);
 
     ///Saves data into csv file
     ///Does not create headers
