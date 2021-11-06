@@ -9,7 +9,9 @@ add_executable(pv021_project
         main.cpp
         main.h
         Net.cpp
+#        NetThread.cpp
         Net.h
         Csv.cpp
         Csv.h
-        Operations.hpp)
+        Operations.hpp
+        OperationsThreads.hpp)

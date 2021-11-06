@@ -107,24 +107,4 @@ void Csv::save(string path_to_file,const Matrix<int>& data) {
     outputFile.close();
 }
 
-//// TODO:
-//// asi prerobit iteraciu
-//void Csv::scaleData(Matrix<double> &vector, double scaleVal) {
-//    for (int i = 0; i < vector.getNumRows(); ++i) {
-//
-//    }
-//    for (auto &i: vector) {
-//        scaleOne(i, scaleVal);
-//    }
-//}
-//
-//void Csv::scaleOne(vector<double> &vector, double scaleVal) {
-////    for (int i = 0; i < vector.size(); ++i) {
-////        vector
-////    }
-//    for (double &j: vector) {
-//        j = j / scaleVal;
-//    }
-//}
-
 

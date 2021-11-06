@@ -103,22 +103,6 @@ double Net::batchCrossEntropy(const Matrix<double>& target) {
     return sum * -1/target.getNumRows();
 }
 
-double Net::accuracy(const Matrix<int> &result, const Matrix<double> &target) {
-    if (result.getNumRows() != target.getNumRows()){
-        throw runtime_error("Can not compare, different numRows !");
-    }
-    if (result.getNumCols() != target.getNumCols()){
-        throw runtime_error("Can not compare, different numCols !");
-    }
-    double correct = 0;
-    for (int i = 0; i < result.getNumRows(); ++i) {
-        if (result(i,0) == target(i,0)){
-            correct++;
-        }
-    }
-    return correct / result.getNumRows();
-}
-
 double Net::accuracy(const Matrix<double> &target) {
     Matrix<int> result = results();
     int correct = 0;
@@ -149,7 +133,7 @@ void Net::forward(const Matrix<double> &input) {
 
 //            TODO: mozno toto treba naopak nasobit, teda w * activation, a nie activation * w
             innerPotentials[i] = weightMatrices[i]
-                    .multiply(activations[i-1]).addToCol(biasMatrices[i]);
+                    .multiplyThreads(activations[i-1]).addToCol(biasMatrices[i]);
             activations[i] = innerPotentials[i];
 
 
@@ -180,7 +164,7 @@ double Net::backward(Matrix<double> &target){
 //        dw(3->4) = dz(y=4) * deriv_activ4(inner potential 4) *y3
 
 //        dW = dZ.multiply(activations[i-1].transpose());
-        dW = dZ.multiply(activations[i-1].transpose());
+        dW = dZ.multiplyThreads(activations[i-1].transpose());
 //        dW = activations[i-1].transpose().multiply(dZ);
         dB = dZ;
 
@@ -189,17 +173,15 @@ double Net::backward(Matrix<double> &target){
 
         if (i > 1){
             innerPotentials[i-1].apply(drelu);
-            dZ = weightMatrices[i].transpose().multiply(dZ).multiplyCells(innerPotentials[i-1]);
+            dZ = weightMatrices[i].transpose().multiplyThreads(dZ).multiplyCells(innerPotentials[i-1]);
         }
     }
     double loss = batchCrossEntropy(target);
 //    cout<< "L: " << loss<<" ";
-//    double acc = accuracy(target);
+    double acc = accuracy(target);
 //    cout<< "A: " <<acc<<" " << endl;
     return loss;
 }
-
-
 
 Matrix<int> Net::results() {
 //    activations.back().print();

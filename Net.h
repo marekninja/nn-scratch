@@ -8,7 +8,7 @@
 using namespace std;
 
 #include <vector>
-#include "Operations.hpp"
+#include "OperationsThreads.hpp"
 
 
 class Net {
@@ -116,8 +116,11 @@ public:
      * e4   ...
      */
     Matrix<int> results();
+
+    void setLearningRate(const double& learning_rate);
     double batchCrossEntropy(const Matrix<double>& target);
-    double accuracy(const Matrix<double>& target);
+    double accuracy(const Matrix<double> &target);
+    static double accuracy(const Matrix<int>& result, const Matrix<double> &target);
 };
 
 
