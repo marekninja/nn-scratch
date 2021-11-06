@@ -51,14 +51,17 @@ private:
     double beta2;
     double epsilon;
 
+    static double random(const double &example);
+
+    static double scale(const double &example);
 
     static double relu(const double &example);
+
+
     static double drelu(const double &ex);
 
     static void softmax(vector<double> &output);
     static void dsoftmax(vector<double> &output);
-
-    double batchCrossEntropy(const Matrix<double>& target);
 
 
 public:
@@ -100,7 +103,21 @@ public:
      */
     double backward(Matrix<double> &target);
 
-    Matrix<double> results();
+    /*
+     * Returns predictions of network
+     * row = example
+     * col = class
+     *
+     * format:
+     *      class
+     * e1   3
+     * e2   1
+     * e3   0
+     * e4   ...
+     */
+    Matrix<int> results();
+    double batchCrossEntropy(const Matrix<double>& target);
+    double accuracy(const Matrix<double>& target);
 };
 
 

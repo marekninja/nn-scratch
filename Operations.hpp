@@ -76,6 +76,10 @@ public:
         return this->numCols;
     };
 
+    vector<vector<T>> getData() const{
+        return this->matData;
+    }
+
     ///multiplication of two matrices
     ///Type T must have defined * operator
     Matrix<T> multiply(const Matrix &other){

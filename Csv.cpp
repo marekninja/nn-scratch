@@ -83,7 +83,7 @@ Matrix<double> Csv::loadOneHot(const string& path_to_file, const int& part) {
     return dataset;
 }
 
-void Csv::save(string path_to_file,const vector<vector<double>>& data) {
+void Csv::save(string path_to_file,const Matrix<int>& data) {
     cout << "saving dataset..." << endl;
 
     ofstream outputFile(path_to_file);
@@ -92,10 +92,10 @@ void Csv::save(string path_to_file,const vector<vector<double>>& data) {
         throw runtime_error("Could not open file!");
     };
 
-    vector <vector<double>> output;
+    vector <vector<int>> output;
     string line;
 
-    for (vector<double> vec: data) {
+    for (vector<int> vec: data.getData()) {
         for (int i = 0; i < vec.size(); ++i) {
             outputFile << vec[i];
             if (i != vec.size() - 1) {
@@ -107,21 +107,24 @@ void Csv::save(string path_to_file,const vector<vector<double>>& data) {
     outputFile.close();
 }
 
-// TODO:
-// asi prerobit iteraciu
-void Csv::scaleData(vector<vector<double>> &vector, double scaleVal) {
-    for (auto &i: vector) {
-        scaleOne(i, scaleVal);
-    }
-}
-
-void Csv::scaleOne(vector<double> &vector, double scaleVal) {
-//    for (int i = 0; i < vector.size(); ++i) {
-//        vector
+//// TODO:
+//// asi prerobit iteraciu
+//void Csv::scaleData(Matrix<double> &vector, double scaleVal) {
+//    for (int i = 0; i < vector.getNumRows(); ++i) {
+//
 //    }
-    for (double &j: vector) {
-        j = j / scaleVal;
-    }
-}
+//    for (auto &i: vector) {
+//        scaleOne(i, scaleVal);
+//    }
+//}
+//
+//void Csv::scaleOne(vector<double> &vector, double scaleVal) {
+////    for (int i = 0; i < vector.size(); ++i) {
+////        vector
+////    }
+//    for (double &j: vector) {
+//        j = j / scaleVal;
+//    }
+//}
 
 
