@@ -13,5 +13,5 @@ add_executable(pv021_project
         Net.h
         Csv.cpp
         Csv.h
-        Operations.hpp
+#        Operations.hpp
         OperationsThreads.hpp)

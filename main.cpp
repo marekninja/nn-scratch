@@ -8,17 +8,31 @@ using namespace std;
 #include <chrono>
 
 
-int main(){
+void runBenchmarks(){
+    for (int i = 64; i <= 2048; i *= 2) {
+        cout << "*** Size: "<<i<<" ***\n";
+        vector<vector<double>> data;
+        for (int j = 0; j < i; ++j) {
+            vector<double> row(i,1.0);
+            data.push_back(row);
+        }
+        Matrix<double> mat(i,i,data);
+        Matrix<double> mat2(mat);
+        auto start = chrono::high_resolution_clock::now();
+        Matrix<double> mN = mat.multiplyNaive(mat2);
+        auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+        cout << "Naive:     "<<duration.count() << "\n";
 
-    Csv csv = Csv();
-    Matrix<double> trainVectors = csv.load("..\\..\\data\\fashion_mnist_train_vectors.csv",6000);
-//    csv.scaleData(trainVectors,255);
-    vector<Matrix<double>> batches = trainVectors.splitToBatches(50);
+        auto start2 = chrono::high_resolution_clock::now();
 
-    Matrix<double> trainLabels = csv.loadOneHot("..\\..\\data\\fashion_mnist_train_labels.csv",6000);
-//    csv.scaleData(trainLabels);
-    vector<Matrix<double>> batchesLabels = trainLabels.splitToBatches(50);
+        Matrix<double> mT = mat.multiply(mat2);
 
+        auto stop2 = chrono::high_resolution_clock::now();
+        auto duration2 = chrono::duration_cast<chrono::microseconds>(stop2 - start2);
+        cout << "Threads:   "<< duration2.count() << "\n";
+
+    }
 //    vector<vector<double>> A{{1.0,0.0,2.0},{-1.0,3.0,1.0}};
 //    vector<vector<double>> B{{3,1},{2,1},{1,0}};
 //////
@@ -32,32 +46,45 @@ int main(){
 //    cout << "\n";
 //    matrixB.print();
 //////
-//    Matrix<double> result = matrixA.multiply(matrixB);
-//    cout << "\n mult: \n";
-//    result.print();
-//    cout << "\n";
+//    cout << endl;
+//    matrixA.multiplyNaive(matrixB).print();
 //
-//    matrixA.multiplyThreads(matrixB).print();
-
-
+//    cout << endl;
+//
+//    matrixA.multiply(matrixB).print();
+//
+//
 //    vector<vector<double>> C{{1.0,0.0},{-1.0,3.0}};
 //    vector<vector<double>> D{{3,1},{2,1}};
-
+//
 //    Matrix<double> matrixC(2,2,C);
 //    Matrix<double> matrixD(2,2,D);
 //    matrixC.add(matrixD).print();
+}
+
+void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs, const int& testPart, const int& testBatch){
+    auto start3 = chrono::high_resolution_clock::now();
+
+    Csv csv = Csv();
+    Matrix<double> trainVectors = csv.load("..\\..\\data\\fashion_mnist_train_vectors.csv",trainPart);
+    vector<Matrix<double>> batches = trainVectors.splitToBatches(batchSize);
+
+    Matrix<double> trainLabels = csv.loadOneHot("..\\..\\data\\fashion_mnist_train_labels.csv",trainPart);
+    vector<Matrix<double>> batchesLabels = trainLabels.splitToBatches(batchSize);
+
+
 
 
 
     auto start = chrono::high_resolution_clock::now();
-    Net myNet = Net({784,1024,10},100,0.01);
+    Net myNet = Net({784,1024,10},batchSize,0.01);
 //    myNet.forward(batches[0]);
 //    myNet.results().print();
 //    myNet.backward(batchesLabels[0]);
 //    myNet.forward(batches[1]);
 //    myNet.results().print();
 //    myNet.backward(batchesLabels[1]);
-    int epochs = 5;
+    int epochs = numEpochs;
     double learning_rate = 0.01;
     for (int i = 0; i < epochs; ++i) {
 
@@ -83,24 +110,35 @@ int main(){
 //        csv.save(".\\results\\train_attempt"+ to_string(i)+".txt",myNet.results());
     }
     auto stop = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    auto durationMicro = chrono::duration_cast<chrono::microseconds>(stop - start);
+    auto durationSec = chrono::duration_cast<chrono::seconds>(stop - start);
+    auto durationMin = chrono::duration_cast<chrono::minutes>(stop - start);
 
-    cout << "Training took: "<<duration.count() << endl;
+    cout << "Training took: "<<durationMicro.count() << " microseconds => "<<durationSec.count()<< " seconds => " << durationMin.count() << " minutes\n";
 
-    Matrix<double> testVectors = csv.load("..\\..\\data\\fashion_mnist_test_vectors.csv");
-    vector<Matrix<double>> batchesTest = testVectors.splitToBatches(100);
+    Matrix<double> testVectors = csv.load("..\\..\\data\\fashion_mnist_test_vectors.csv",testPart);
+    vector<Matrix<double>> batchesTest = testVectors.splitToBatches(testBatch);
 //    csv.scaleData(trainVectors,255);
-    Matrix<double> testLabels = csv.load("..\\..\\data\\fashion_mnist_test_labels.csv");
+    Matrix<double> testLabels = csv.load("..\\..\\data\\fashion_mnist_test_labels.csv",testPart);
 //    vector<Matrix<double>> batchesTestLabels = trainVectors.splitToBatches(100);
 
     vector<int> results;
-    for (int i = 0; i < 100; ++i) {
+    auto start2 = chrono::high_resolution_clock::now();
+    for (int i = 0; i < testVectors.getNumRows() / testBatch; ++i) {
 
         myNet.forward(batchesTest[i]);
         vector<int> out = myNet.results().transpose().getData()[0];
         results.insert(results.end(), out.begin(), out.end());
     }
-    Matrix<int> res(1,10000, {results});
+    auto stop2 = chrono::high_resolution_clock::now();
+    auto durationMicro2 = chrono::duration_cast<chrono::microseconds>(stop2 - start2);
+    auto durationSec2 = chrono::duration_cast<chrono::seconds>(stop2 - start2);
+    auto durationMin2 = chrono::duration_cast<chrono::minutes>(stop2 - start2);
+    cout << "Eval took: "<<durationMicro2.count() << " microseconds => "<<
+        durationSec2.count()<< " seconds => " << durationMin2.count() << " minutes\n";
+
+    Matrix<int> res(1,results.size(), {results});
+//    Matrix<int> res(1,results.size(), {results});
     res = res.transpose();
 
     double acc = myNet.accuracy(res,testLabels);
@@ -111,6 +149,13 @@ int main(){
 
     csv.save("..\\results\\test1.txt",res);
 
+    auto stop3 = chrono::high_resolution_clock::now();
+    auto durationSec3 = chrono::duration_cast<chrono::seconds>(stop3 - start3);
+    auto durationMin3 = chrono::duration_cast<chrono::minutes>(stop3 - start3);
+    cout << "Running time: "<<
+         durationSec3.count()<< " seconds => " << durationMin3.count() << " minutes\n";
+
+
 //    double acc = myNet.accuracy(testLabels);
 //    cout << "Accuracy: "<< acc;
 
@@ -119,5 +164,11 @@ int main(){
 //    vector<double> vec({2});
 //    vector<double> vec2({1,2,3});
 //    vector<double> vec3 = vec * vec2;
+}
 
+
+int main(){
+//    runBenchmarks();
+    runTraining(INT32_MAX,50,5,INT32_MAX, 200);
+//    runTraining(100,50,1,200, 200);
 }

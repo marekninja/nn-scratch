@@ -4,6 +4,7 @@ using namespace std;
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
+#pragma GCC optimize("Ofast")
 
 
 
