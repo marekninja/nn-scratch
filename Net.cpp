@@ -45,6 +45,8 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
 }
 
 double Net::random(const double &example){
+//    TODO: robit inicializaciu vah pre kazdu vrstvu podla aktivacii
+//    np.random.randn(n_h, n_x) * np.sqrt(1. / n_x)
     return (double)rand()/RAND_MAX + 1e-15;
 }
 
@@ -55,6 +57,7 @@ double Net::random(const double &example){
 //double Net::randomSoft(const double &example){
 //    return (double)rand()/RAND_MAX + 1e-15;
 //}
+
 //TODO: pozri ci je to spravne
 double Net::relu(const double &example) {
     return example > 0 ? example : 0;
@@ -81,7 +84,6 @@ void Net::softmax(vector<double>& output) {
     for (int i = 0; i < output.size(); ++i) {
         output[i] -= max;
         sum += exp(output[i]);
-
     }
 
     for (int i = 0; i < output.size(); ++i) {
@@ -96,6 +98,8 @@ void Net::dsoftmax(vector<double>& output) {
     }
 }
 
+//TODO: dava divne vysledky, ako riesit zaporne aktivacie a 0?
+//TODO: ako je vobec mozne ze vystupna aktivacia je zaporna/nulova??
 double Net::batchCrossEntropy(const Matrix<double>& target) {
     double sum = 0;
 
