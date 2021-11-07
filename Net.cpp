@@ -150,7 +150,12 @@ void Net::forward(const Matrix<double> &input) {
 
 //            TODO: mozno toto treba naopak nasobit, teda w * activation, a nie activation * w
             innerPotentials[i] = weightMatrices[i]
-                    .multiply(activations[i-1]).addToCol(biasMatrices[i]);
+                    .multiply(activations[i-1]);
+            innerPotentials[i].addToCol(biasMatrices[i]);
+//            innerPotentials[i] = weightMatrices[i]
+//                    .multiply(activations[i-1]).addToColAlloc(biasMatrices[i]);
+//            innerPotentials[i].addToCol(biasMatrices[i]);
+
             activations[i] = innerPotentials[i];
 
 
@@ -171,7 +176,10 @@ double Net::backward(Matrix<double> &target){
 //    cout << "back" << endl;
 //    cout<< "L: " << loss<<" ";
 
-    Matrix<double> dZ = activations.back().minus(target.transpose());
+//    Matrix<double> dZ = activations.back().minusAlloc(target.transpose());
+    Matrix<double> dZ = activations.back();
+    dZ.minus(target.transpose());
+
     Matrix<double> dW;
     Matrix<double> dB;
 
@@ -185,12 +193,23 @@ double Net::backward(Matrix<double> &target){
 //        dW = activations[i-1].transpose().multiply(dZ);
         dB = dZ;
 
-        weightMatrices[i] = weightMatrices[i].minus(dW.multiplyNum(learningRate));
-        biasMatrices[i] = biasMatrices[i].minus(dB.flatMeanRows().multiplyNum(learningRate));
+
+//        weightMatrices[i] = weightMatrices[i].minusAlloc(dW.multiplyNum(learningRate));
+//        weightMatrices[i].minus(dW.multiplyNumAlloc(learningRate));
+        dW.multiplyNum(learningRate);
+        weightMatrices[i].minus(dW);
+//        biasMatrices[i] = biasMatrices[i].minusAlloc(dB.flatMeanRows().multiplyNum(learningRate));
+//        biasMatrices[i].minus(dB.flatMeanRowsAlloc().multiplyNum(learningRate));
+        dB.flatMeanRows();
+//        biasMatrices[i].minus(dB.multiplyNumAlloc(learningRate));
+        dB.multiplyNum(learningRate);
+        biasMatrices[i].minus(dB);
 
         if (i > 1){
             innerPotentials[i-1].apply(drelu);
-            dZ = weightMatrices[i].transpose().multiply(dZ).multiplyCells(innerPotentials[i-1]);
+//            dZ = weightMatrices[i].transpose().multiply(dZ).multiplyCellsAlloc(innerPotentials[i-1]);
+            dZ = weightMatrices[i].transpose().multiply(dZ);
+            dZ.multiplyCells(innerPotentials[i-1]);
         }
     }
     double loss = batchCrossEntropy(target);

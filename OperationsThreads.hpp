@@ -245,7 +245,7 @@ public:
         return result;
     }
 
-    Matrix<T> flatMeanRows(){
+    Matrix<T> flatMeanRowsAlloc(){
         Matrix result(numRows, 1);
 
         for (int i = 0; i < numRows; ++i) {
@@ -257,7 +257,18 @@ public:
         return result;
     }
 
-    Matrix<T> multiplyCells(const Matrix<T>& other){
+    void flatMeanRows(){
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result(i,0) += matData[i][j];
+                matData[i][0] += matData[i][j];
+            }
+            matData[i][0] /= numCols;
+        }
+        numCols = 1;
+    }
+
+    Matrix<T> multiplyCellsAlloc(const Matrix<T>& other){
         if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
             throw runtime_error("Can not multiplyCells() matrices of different shape!");
         }
@@ -271,7 +282,19 @@ public:
         return result;
     }
 
-    Matrix<T> multiplyNum(const double& num){
+    void multiplyCells(const Matrix<T>& other){
+        if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
+            throw runtime_error("Can not multiplyCells() matrices of different shape!");
+        }
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result.matData[i][j] = this->matData[i][j] + other.matData[i][j];
+                matData[i][j] *= other(i,j);
+            }
+        }
+    }
+
+    Matrix<T> multiplyNumAlloc(const double& num){
         Matrix result(numRows, numCols);
         for (int i = 0; i < numRows; ++i) {
             for (int j = 0; j < numCols; ++j) {
@@ -280,6 +303,15 @@ public:
             }
         }
         return result;
+    }
+
+    void multiplyNum(const double& num){
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result.matData[i][j] = this->matData[i][j] + other.matData[i][j];
+                matData[i][j] *= num;
+            }
+        }
     }
 
 
@@ -309,7 +341,7 @@ public:
     }
 
 //    Matrix<T> minus(const Matrix &other){
-    Matrix<T> minus(const Matrix &other){
+    Matrix<T> minusAlloc(const Matrix &other){
         if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
             throw runtime_error("Can not add() matrices of different shape!");
         }
@@ -338,15 +370,56 @@ public:
         return result;
     };
 
+    void minus(const Matrix &other){
+        if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
+            throw runtime_error("Can not add() matrices of different shape!");
+        }
+        int cols = numCols;
+        int rows = numRows;
+
+        vector<thread> threads;
+        int threadCount = thread::hardware_concurrency();
+
+        int neededThreads = numRows % THREAD_ROWS == 0 ? numRows / THREAD_ROWS  : numRows / THREAD_ROWS + 1;
+
+        if (neededThreads > threadCount){
+            neededThreads = threadCount;
+        }
+
+        vector<vector<int>> rowPartitions = partitionRows(*this, neededThreads);
+
+        for (int i = 0; i < neededThreads; ++i) {
+            threads.push_back(std::thread(minusRow, *this, other, std::ref(*this), rowPartitions[i]));
+        }
+
+        for (int i = 0; i < neededThreads; ++i) {
+            threads[i].join();
+        }
+    };
+
     //Addition of 1 row matrix to every row
-    Matrix<T> addToCol(const Matrix& col){
+    void addToCol(Matrix& col){
+        int cols = numCols;
+        int rows = numRows;
+//        Matrix result(rows, cols);
+
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                (*this)(i,j) = (*this)(i,j) + col(i,0);
+                matData[i][j] +=  col(i,0);
+            }
+        }
+//        return result;
+    }
+
+    Matrix<T> addToColAlloc(const Matrix& col){
         int cols = numCols;
         int rows = numRows;
         Matrix result(rows, cols);
 
         for (int i = 0; i < numRows; ++i) {
             for (int j = 0; j < numCols; ++j) {
-                result(i,j) = this->matData[i][j] + col(i,0);
+                result(i,j) = result(i,j) + col(i,0);
             }
         }
         return result;
