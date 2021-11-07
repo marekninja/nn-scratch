@@ -7,7 +7,7 @@
 
 #include "Net.h"
 #include "Csv.h"
-#include "Operations.hpp"
+#include "OperationsThreads.hpp"
 
 class main {
 };
