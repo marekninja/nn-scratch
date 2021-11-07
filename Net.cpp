@@ -55,15 +55,15 @@ double Net::random(const double &example){
 //double Net::randomSoft(const double &example){
 //    return (double)rand()/RAND_MAX + 1e-15;
 //}
-
+//TODO: pozri ci je to spravne
 double Net::relu(const double &example) {
-    return 0 > example ? example : 0;
+    return example > 0 ? example : 0;
 }
 
 double Net::scale(const double &example) {
-    return example / 255;
+    return example / (double)255;
 }
-
+//TODO: pozri ci je to spravne
 double Net::drelu(const double &ex){
     return ex > 0 ? 1 : 0;
 }
@@ -71,8 +71,17 @@ double Net::drelu(const double &ex){
 void Net::softmax(vector<double>& output) {
     double sum = 0;
 
+    double max = 0;
     for (int i = 0; i < output.size(); ++i) {
+        if (output[i] > max){
+            max = output[i];
+        }
+    }
+
+    for (int i = 0; i < output.size(); ++i) {
+        output[i] -= max;
         sum += exp(output[i]);
+
     }
 
     for (int i = 0; i < output.size(); ++i) {
@@ -92,11 +101,13 @@ double Net::batchCrossEntropy(const Matrix<double>& target) {
 
     for (int i = 0; i < target.getNumRows(); ++i) {
         for (int j = 0; j < activations.back().getNumRows(); ++j) {
-//            if (activations.back()(j,i) <= 0){
+            if (activations.back()(j,i) <= 0){
+//                cout << "activation i="<<i<<" j="<<j<<" :"<<activations.back()(j,i)<<"\n";
 //                activations.back()(j,i) = 1e-15;
-//            }
-            sum += target(i,j) * log(activations.back()(j,i));
-
+                sum += target(i,j) * log(1e-15);
+            } else {
+                sum += target(i,j) * log(activations.back()(j,i));
+            }
 //            sum += target(i,j) * activations.back()(j,i);
         }
     }
@@ -190,6 +201,8 @@ double Net::backward(Matrix<double> &target){
 
 //        dW = dZ.multiply(activations[i-1].transpose());
         dW = dZ.multiply(activations[i-1].transpose());
+        //TODO: toto je navyse lebo batch size
+        dW.multiplyNum(1/batchSize);
 //        dW = activations[i-1].transpose().multiply(dZ);
         dB = dZ;
 
