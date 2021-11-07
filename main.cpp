@@ -6,6 +6,93 @@ using namespace std;
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <cstdlib>
+#include <algorithm>
+
+double random(const double &example){
+    return (double)rand()/RAND_MAX + 1e-15;
+}
+
+void runTests(){
+    int size = 2;
+    vector<vector<double>> data;
+    for (int j = 0; j < size; ++j) {
+        vector<double> row(size);
+        std::transform(row.begin(), row.end(), row.begin(), random);
+        data.push_back(row);
+    }
+    Matrix<double> mat(size,size,data);
+    Matrix<double> mat2(mat);
+    Matrix<double>::compare(mat,mat2,"init..");
+
+    Matrix<double> mN = mat.multiplyNaive(mat2);
+    Matrix<double> mT = mat.multiply(mat2);
+
+    Matrix<double>::compare(mN,mT,"multiply");
+
+    mN = Matrix<double>(mat);
+    mT = Matrix<double>(mat2);
+    Matrix<double>::compare(mN,mT,"init flatMeanRows");
+    mN = mN.flatMeanRowsAlloc();
+    mT.flatMeanRows();
+    Matrix<double>::compare(mN,mT,"flatMeanRows");
+
+    mN = Matrix<double>(mat);
+    mT = Matrix<double>(mat2);
+    Matrix<double>::compare(mN,mT,"ini multiplyCells");
+
+    mN = mN.multiplyCellsAlloc(mat);
+    mT.multiplyCells(mat2);
+    Matrix<double>::compare(mN,mT,"multiplyCells");
+
+    mN = Matrix<double>(mat);
+    mT = Matrix<double>(mat2);
+    Matrix<double>::compare(mN,mT,"init multiplyNum");
+
+    mN = mN.multiplyNumAlloc(4.0);
+    mT.multiplyNum(4.0);
+    Matrix<double>::compare(mN,mT,"multiplyNum");
+
+    mN = Matrix<double>(mat);
+    mT = Matrix<double>(mat2);
+    Matrix<double>::compare(mN,mT,"init minus");
+    mN = mN.minusAlloc(mat);
+    mT.minus(mat2);
+    Matrix<double>::compare(mN,mT,"minus");
+
+    mN = Matrix<double>(mat);
+    mT = Matrix<double>(mat2);
+    Matrix<double>::compare(mN,mT,"init addToCol");
+    mN = mN.addToColAlloc(mat);
+    mT.addToCol(mat2);
+    Matrix<double>::compare(mN,mT,"addToCol");
+
+
+
+//    Matrix<double> matrixA(2,3,A);
+////////    (int,int,class std::vector<class std::vector<double,class std::allocator<double> >,class std::allocator<class std::vector<double,class std::allocator<double> > > > const &)
+////    matrixA.fillup(2,3,A);
+//    matrixA.print();
+////////
+//    Matrix<double> matrixB(3,2,B);
+//    cout << "\n";
+//    matrixB.print();
+//////
+//    cout << endl;
+//    matrixA.multiplyNaive(matrixB).print();
+//
+//    cout << endl;
+//
+//    matrixA.multiply(matrixB).print();
+//
+//
+//    vector<vector<double>> C{{1.0,0.0},{-1.0,3.0}};
+//    vector<vector<double>> D{{3,1},{2,1}};
+//
+//    Matrix<double> matrixC(2,2,C);
+//    Matrix<double> matrixD(2,2,D);
+//    matrixC.add(matrixD).print();
+}
 
 
 void runBenchmarks(){
@@ -33,33 +120,7 @@ void runBenchmarks(){
         cout << "Threads:   "<< duration2.count() << "\n";
 
     }
-//    vector<vector<double>> A{{1.0,0.0,2.0},{-1.0,3.0,1.0}};
-//    vector<vector<double>> B{{3,1},{2,1},{1,0}};
-//////
-//////
-//    Matrix<double> matrixA(2,3,A);
-////////    (int,int,class std::vector<class std::vector<double,class std::allocator<double> >,class std::allocator<class std::vector<double,class std::allocator<double> > > > const &)
-////    matrixA.fillup(2,3,A);
-//    matrixA.print();
-////////
-//    Matrix<double> matrixB(3,2,B);
-//    cout << "\n";
-//    matrixB.print();
-//////
-//    cout << endl;
-//    matrixA.multiplyNaive(matrixB).print();
-//
-//    cout << endl;
-//
-//    matrixA.multiply(matrixB).print();
-//
-//
-//    vector<vector<double>> C{{1.0,0.0},{-1.0,3.0}};
-//    vector<vector<double>> D{{3,1},{2,1}};
-//
-//    Matrix<double> matrixC(2,2,C);
-//    Matrix<double> matrixD(2,2,D);
-//    matrixC.add(matrixD).print();
+
 }
 
 void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs, const int& testPart, const int& testBatch){
@@ -77,7 +138,7 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
 
 
     auto start = chrono::high_resolution_clock::now();
-    Net myNet = Net({784,1024,10},batchSize,0.01);
+    Net myNet = Net({784,1024,10},batchSize,0.001);
 //    myNet.forward(batches[0]);
 //    myNet.results().print();
 //    myNet.backward(batchesLabels[0]);
@@ -168,7 +229,8 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
 
 
 int main(){
+//    runTests();
 //    runBenchmarks();
-    runTraining(INT32_MAX,50,5,INT32_MAX, 200);
-//    runTraining(100,50,1,200, 200);
+//    runTraining(INT32_MAX,50,5,INT32_MAX, 200);
+    runTraining(10000,100,5,10000, 200);
 }

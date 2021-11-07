@@ -259,7 +259,7 @@ public:
 
     void flatMeanRows(){
         for (int i = 0; i < numRows; ++i) {
-            for (int j = 0; j < numCols; ++j) {
+            for (int j = 1; j < numCols; ++j) {
 //                result(i,0) += matData[i][j];
                 matData[i][0] += matData[i][j];
             }
@@ -419,7 +419,8 @@ public:
 
         for (int i = 0; i < numRows; ++i) {
             for (int j = 0; j < numCols; ++j) {
-                result(i,j) = result(i,j) + col(i,0);
+//                result(i,j) = result(i,j) + col(i,0);
+                result(i,j) = matData[i][j] + col(i,0);
             }
         }
         return result;
@@ -490,6 +491,31 @@ public:
             cout << ")" << endl;
         }
     };
+
+    static bool compare(const Matrix<T>& m1, const Matrix<T>& m2, const string& operation) {
+        cout << operation << ": ";
+        if (m1.getNumRows() != m2.getNumRows()){
+            cout << "not equal! m1 rows: "<< m1.getNumRows() <<" m2 rows: "<<m2.getNumRows() << "\n";
+            return false;
+        }
+        if (m1.getNumCols() != m2.getNumCols()){
+            cout << "not equal! m1 rows: "<< m1.getNumCols() <<" m2 rows: "<<m2.getNumCols() << "\n";
+            return false;
+        }
+
+
+        for (int i = 0; i < m1.numRows; ++i) {
+            for (int j = 0; j < m1.numCols; ++j) {
+                if (m1(i,j) != m2(i,j)){
+                    cout << "not equal! (i= "<< i <<", j= "<<j<<  " ) m1: "<< m1(i,j);
+                    cout << " m2: " << m2(i,j) << "\n";
+                    return false;
+                }
+            }
+        }
+        cout<<"matrices same!\n";
+        return true;
+    }
 };
 
 #endif //PV021_PROJECT_OPERATIONS_H
