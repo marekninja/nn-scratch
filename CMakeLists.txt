@@ -14,4 +14,4 @@ add_executable(pv021_project
         Csv.cpp
         Csv.h
 #        Operations.hpp
-        OperationsThreads.hpp)
+        OperationsThreads.hpp Scenario.h Scenario.cpp)
