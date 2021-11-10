@@ -119,7 +119,7 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
     double learning_rate = learningRate;
     for (int i = 0; i < epochs; ++i) {
 
-        if (i % 3 == 0 and i != 0){
+        if ((i % 3 == 0) && (i != 0)){
             learning_rate /= 10;
             myNet.setLearningRate(learning_rate);
         }
@@ -184,17 +184,18 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
 }
 
 
-void runXor(const vector<int> &topology, const double &learningRate, const int& batchSize, const int& numEpochs) {
+void runXor(const int& numEpochs, const int& batchSize, const vector<int>& topology, const double&learningRate) {
     auto start3 = chrono::high_resolution_clock::now();
 
-    vector<vector<double>> possible = {{0,0},{1,1},{1,0},{0,1}};
-    vector<vector<double>> results = {{0^0},{1^1},{1^0},{0^1}};
+    vector<vector<double>> vectors = {{0, 0}, {1, 1}, {1, 0}, {0, 1}};
+    vector<vector<double>> labelsOneHot = {{1, 0}, {1, 0}, {0, 1}, {0, 1}};
+    vector<vector<double>> labels = {{0}, {0}, {1}, {1}};
 
-    Matrix<double> trainVectors = Matrix<double>(4,2,possible);
+    Matrix<double> trainVectors = Matrix<double>(4, 2, vectors);
 
     vector<Matrix<double>> batches = trainVectors.splitToBatches(batchSize);
 
-    Matrix<double> trainLabels = Matrix<double>(4,1,results);
+    Matrix<double> trainLabels = Matrix<double>(4, 2, labelsOneHot);
     vector<Matrix<double>> batchesLabels = trainLabels.splitToBatches(batchSize);
 
     auto start = chrono::high_resolution_clock::now();
@@ -205,10 +206,10 @@ void runXor(const vector<int> &topology, const double &learningRate, const int& 
     double learning_rate = learningRate;
     for (int i = 0; i < epochs; ++i) {
 
-        if (i % 3 == 0 and i != 0){
-            learning_rate /= 10;
-            myNet.setLearningRate(learning_rate);
-        }
+//        if ((i % 3 == 0) && (i != 0)){
+//            learning_rate /= 10;
+//            myNet.setLearningRate(learning_rate);
+//        }
         cout << "***** Epoch: " << i << " start ******"<<endl;
         double sum_losses = 0.0;
 
@@ -224,7 +225,7 @@ void runXor(const vector<int> &topology, const double &learningRate, const int& 
         sum_losses /= batchesLabels.size();
 
         cout << "Loss: " << sum_losses << endl;
-//        csv.save(".\\results\\train_attempt"+ to_string(i)+".txt",myNet.results());
+//        csv.save(".\\labelsOneHot\\train_attempt"+ to_string(i)+".txt",myNet.labelsOneHot());
     }
     auto stop = chrono::high_resolution_clock::now();
     auto durationMicro = chrono::duration_cast<chrono::microseconds>(stop - start);
@@ -233,14 +234,16 @@ void runXor(const vector<int> &topology, const double &learningRate, const int& 
 
     cout << "Training took: "<<durationMicro.count() << " microseconds => "<<durationSec.count()<< " seconds => " << durationMin.count() << " minutes\n";
 
-    Matrix<double> testVectors = csv.load(testDataPath,testPart);
-    vector<Matrix<double>> batchesTest = testVectors.splitToBatches(testBatch);
-    Matrix<double> testLabels = csv.load(testLabelsPath,testPart);
+
+
+    Matrix<double> testVectors = Matrix<double>(4, 2, vectors);
+    vector<Matrix<double>> batchesTest = trainVectors.splitToBatches(batchSize);
+    Matrix<double> testLabels = Matrix<double>(4, 1, labels);
 
 
     vector<int> results;
     auto start2 = chrono::high_resolution_clock::now();
-    for (int i = 0; i < testVectors.getNumRows() / testBatch; ++i) {
+    for (int i = 0; i < testVectors.getNumRows() / batchSize; ++i) {
 
         myNet.forward(batchesTest[i]);
         vector<int> out = myNet.results().transpose().getData()[0];
@@ -253,22 +256,18 @@ void runXor(const vector<int> &topology, const double &learningRate, const int& 
     cout << "Eval took: "<<durationMicro2.count() << " microseconds => "<<
          durationSec2.count()<< " seconds => " << durationMin2.count() << " minutes\n";
 
-    Matrix<int> res(1,results.size(), {results});
+    Matrix<int> res(1, results.size(), {results});
     res = res.transpose();
 
     double acc = myNet.accuracy(res,testLabels);
     cout << "Accuracy: "<< acc;
 
 
-    csv.save("..\\results\\test1.txt",res);
+//    csv.save("..\\labelsOneHot\\test1.txt",res);
 
     auto stop3 = chrono::high_resolution_clock::now();
     auto durationSec3 = chrono::duration_cast<chrono::seconds>(stop3 - start3);
     auto durationMin3 = chrono::duration_cast<chrono::minutes>(stop3 - start3);
     cout << "Running time: "<<
          durationSec3.count()<< " seconds => " << durationMin3.count() << " minutes\n";
-}
-
-void runXor(){
-
 }

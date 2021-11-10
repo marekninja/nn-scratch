@@ -17,7 +17,7 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
                  const vector<int>& topology= {784,1024,10}, const double&learning_rate=0.001,
                  const int& trainPart=INT32_MAX, const int &batchSize=50,const int&numEpochs=5, const int& testPart=INT32_MAX, const int& testBatch=200);
 
-void runXor(const vector<int>& topology= {2,1,1}, const double&learning_rate=0.001, const int& batchSize=1);
+void runXor(const int& numEpochs=5, const int& batchSize=1, const vector<int>& topology= {2,1,1}, const double&learningRate=0.001);
 
 
 #endif //PV021_PROJECT_SCENARIO_H
