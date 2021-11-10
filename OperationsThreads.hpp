@@ -440,7 +440,9 @@ public:
     void apply(std::function<T(const int& seed, const int& incoming, const int& cols)> func, const int& seed, const int& incoming, const int& cols){
 //        cout << "apply softmax" << endl;
         for (int i = 0; i < numRows; ++i) {
-            func(seed, incoming, cols);
+            for (int j = 0; j < numCols; ++j) {
+                matData[i][j] = func(seed, incoming, cols);
+            }
         }
     }
 

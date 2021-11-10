@@ -24,6 +24,7 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
     epsilon = epsilon_v;
     seed = 5;
 
+
     weightMatrices.resize(size);
     activations.resize(size);
     innerPotentials.resize(size);
@@ -34,11 +35,12 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
         Matrix<double> weights(architecture[i],architecture[i-1]);
         Matrix<double> biases(1,architecture[i]);
         if (i < arch.size()-1){
-            weights.apply(initRelu,seed,architecture[i-1],architecture[i]);
+            initRelu(weights,seed*i,architecture[i-1],architecture[i]);
 //            bias set to 0 for relu
         } else {
 //            init softmax
-            weights.apply(initSoftmax,seed,architecture[i-1],architecture[i]);
+
+            initSoftmax(weights,seed*i,architecture[i-1],architecture[i]);
 //            bias set to 0 for softmax
         }
 
@@ -49,34 +51,42 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
 
 
 
-double Net::initRelu(const int& seed, const int& incoming, const int& cols){
+void Net::initRelu(Matrix<double>& weights, const int& seed, const int& incoming, const int& cols){
 //kaiming initialization
 //    random(number incoming, cols) * math.sqrt( 2 / number incoming)
 
     std::mt19937 gen(seed);
     std::normal_distribution<> distrib(0, 1);
-    return distrib(gen) * sqrt( (double)2/incoming);
 
+    for (int i = 0; i < weights.getNumRows(); ++i) {
+        for (int j = 0; j < weights.getNumCols(); ++j) {
+            double num = distrib(gen) * sqrt( (double)2/incoming);
+            weights(i,j) = num;
+        }
+    }
 //    return (double)rand()/RAND_MAX + 1e-15;
 //    return 0;
 }
 
-double Net::initSoftmax(const int& seed, const int& incoming, const int& cols){
+void Net::initSoftmax(Matrix<double>& weights, const int& seed, const int& incoming, const int& cols){
 //xavier initialization
 //  uniform_random(-1,1) * match.sqrt(6/(incoming*cols)
     std::mt19937 gen(seed);
-    std::uniform_int_distribution<> distrib(-1, 1);
-    return distrib(gen) * sqrt( (double)6/(incoming * cols));
+    std::uniform_real_distribution<> distrib(-1, 1);
+
+    for (int i = 0; i < weights.getNumRows(); ++i) {
+        for (int j = 0; j < weights.getNumCols(); ++j) {
+            double num = distrib(gen) * sqrt( (double)6/(incoming * cols));
+            weights(i,j) = num;
+        }
+    }
+//    double num = distrib(gen) * sqrt( (double)6/(incoming * cols));
+//    double num1 = distrib(gen) * sqrt( (double)6/(incoming * cols));
+//    double num2 = distrib(gen) * sqrt( (double)6/(incoming * cols));
+//    double num3 = distrib(gen) * sqrt( (double)6/(incoming * cols));
+//    return num;
 //    return (double)rand()/RAND_MAX + 1e-15;
 }
-
-//double Net::randomRelu(const double &example){
-//    return (double)rand()/RAND_MAX + 1e-15;
-//}
-//
-//double Net::randomSoft(const double &example){
-//    return (double)rand()/RAND_MAX + 1e-15;
-//}
 
 //TODO: pozri ci je to spravne
 double Net::relu(const double &example) {

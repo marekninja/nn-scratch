@@ -8,6 +8,7 @@
 using namespace std;
 
 #include <vector>
+#include <random>
 #include "OperationsThreads.hpp"
 
 
@@ -50,10 +51,10 @@ private:
     double beta1;
     double beta2;
     double epsilon;
-    int seed;
+    int seed = 5;
 
-    static double initRelu(const int& seed, const int& incoming, const int& cols);
-    static double initSoftmax(const int& seed, const int& incoming, const int& cols);
+    static void initRelu(Matrix<double>& weights, const int& seed, const int& incoming, const int& cols);
+    static void initSoftmax(Matrix<double>& weights, const int& seed, const int& incoming, const int& cols);
 
     static double scale(const double &example);
 
