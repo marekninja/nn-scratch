@@ -119,7 +119,7 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
     double learning_rate = learningRate;
     for (int i = 0; i < epochs; ++i) {
 
-        if ((i % 3 == 0) && (i != 0)){
+        if (i < 7 &&(i % 2 == 0) && (i != 0)){
             learning_rate /= 10;
             myNet.setLearningRate(learning_rate);
         }
@@ -189,6 +189,7 @@ void runXor(const int& numEpochs, const int& batchSize, const vector<int>& topol
 
     vector<vector<double>> vectors = {{0, 0}, {1, 1}, {1, 0}, {0, 1}};
     vector<vector<double>> labelsOneHot = {{1, 0}, {1, 0}, {0, 1}, {0, 1}};
+
     vector<vector<double>> labels = {{0}, {0}, {1}, {1}};
 
     Matrix<double> trainVectors = Matrix<double>(4, 2, vectors);

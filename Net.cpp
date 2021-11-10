@@ -142,11 +142,28 @@ double Net::batchCrossEntropy(const Matrix<double>& target) {
 //            } else {
 //                sum += target(i,j) * log(activations.back()(j,i));
 //            }
-            sum += target(i,j) * activations.back()(j,i);
+            sum += target(i,j) * log(activations.back()(j,i));
         }
     }
 
     return sum * -1/target.getNumRows();
+}
+
+//accuracy of one hot
+double Net::accuracy(const Matrix<double> &target) {
+    int correct = 0;
+//    cout<<"activations:\n";
+//    activations.back().print();
+//    cout << "target:\n";
+//    target.print();
+    for (int i = 0; i < target.getNumRows(); ++i) {
+        for (int j = 0; j < activations.back().getNumRows(); ++j) {
+            if (target(i,j) == 1 && activations.back()(j,i) == target(i,j)){
+                correct++;
+            }
+        }
+    }
+    return ((double)correct/target.getNumRows())*100;
 }
 
 double Net::accuracy(const Matrix<int> &result, const Matrix<double> &target) {
@@ -163,20 +180,6 @@ double Net::accuracy(const Matrix<int> &result, const Matrix<double> &target) {
         }
     }
     return correct / result.getNumRows();
-}
-
-double Net::accuracy(const Matrix<double> &target) {
-    Matrix<int> result = results();
-    int correct = 0;
-    for (int i = 0; i < result.getNumRows(); ++i) {
-        for (int j = 0; j < target.getNumCols(); ++j) {
-            if (target(i,j) == 1 && result(i,0) == j){
-                correct++;
-            }
-        }
-    }
-
-    return ((double)correct/result.getNumRows())*100;
 }
 
 void Net::forward(const Matrix<double> &input) {
@@ -236,21 +239,25 @@ double Net::backward(Matrix<double> &target){
 
         dW = dZ.multiply(activations[i-1].transpose());
         //TODO: toto je navyse lebo batch size
-        dW.multiplyNum(1/batchSize);
+
 
         dB = dZ;
-
-        dW.multiplyNum(learningRate);
-        weightMatrices[i].minus(dW);
         dB.flatMeanRows();
         dB.multiplyNum(learningRate);
         biasMatrices[i].minus(dB);
 
         if (i > 1){
             innerPotentials[i-1].apply(drelu);
+
             dZ = weightMatrices[i].transpose().multiply(dZ);
             dZ.multiplyCells(innerPotentials[i-1]);
         }
+
+        dW.multiplyNum(1/batchSize);
+
+        dW.multiplyNum(learningRate);
+        weightMatrices[i].minus(dW);
+
     }
     double loss = batchCrossEntropy(target);
 //    cout<< "L: " << loss<<" ";

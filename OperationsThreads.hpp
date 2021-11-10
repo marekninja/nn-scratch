@@ -1,7 +1,7 @@
 //
 // Created by marek on 10/27/2021.
 //
-#pragma GCC optimize("Ofast")
+//#pragma GCC optimize("Ofast")
 using namespace std;
 #include <vector>
 #include <iostream>
