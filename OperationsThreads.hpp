@@ -374,8 +374,6 @@ public:
         if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
             throw runtime_error("Can not add() matrices of different shape!");
         }
-        int cols = numCols;
-        int rows = numRows;
 
         vector<thread> threads;
         int threadCount = thread::hardware_concurrency();
@@ -399,8 +397,6 @@ public:
 
     //Addition of 1 row matrix to every row
     void addToCol(Matrix& col){
-        int cols = numCols;
-        int rows = numRows;
 //        Matrix result(rows, cols);
 
         for (int i = 0; i < numRows; ++i) {

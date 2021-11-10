@@ -5,8 +5,6 @@
 #ifndef SRC_NET_H
 #define SRC_NET_H
 
-using namespace std;
-
 #include <vector>
 #include <random>
 #include "OperationsThreads.hpp"

@@ -1,11 +1,9 @@
-using namespace std;
 #include "Net.h"
 #include <cmath>
 #include <iostream>
 #include <algorithm>
-#include <cstdlib>
 #include <random>
-//#pragma GCC optimize("Ofast")
+
 
 
 

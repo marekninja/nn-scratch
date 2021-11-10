@@ -19,7 +19,7 @@ void runTests(){
     vector<vector<double>> data;
     for (int j = 0; j < size; ++j) {
         vector<double> row(size);
-        std::transform(row.begin(), row.end(), row.begin(), random);
+        std::transform(row.begin(), row.end(), row.begin(), ::random);
         data.push_back(row);
     }
     Matrix<double> mat(size,size,data);
