@@ -50,8 +50,10 @@ private:
     double beta1;
     double beta2;
     double epsilon;
+    int seed;
 
-    static double random(const double &example);
+    static double initRelu(const int& seed, const int& incoming, const int& cols);
+    static double initSoftmax(const int& seed, const int& incoming, const int& cols);
 
     static double scale(const double &example);
 

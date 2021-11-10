@@ -437,10 +437,10 @@ public:
         }
     }
 
-    void apply(std::function<void (vector<T>&)> func){
+    void apply(std::function<T(const int& seed, const int& incoming, const int& cols)> func, const int& seed, const int& incoming, const int& cols){
 //        cout << "apply softmax" << endl;
         for (int i = 0; i < numRows; ++i) {
-            func(matData[i]);
+            func(seed, incoming, cols);
         }
     }
 

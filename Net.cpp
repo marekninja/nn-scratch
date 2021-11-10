@@ -4,7 +4,8 @@ using namespace std;
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
-#pragma GCC optimize("Ofast")
+#include <random>
+//#pragma GCC optimize("Ofast")
 
 
 
@@ -21,6 +22,7 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
     beta1 = beta_1;
     beta2 = beta_2;
     epsilon = epsilon_v;
+    seed = 5;
 
     weightMatrices.resize(size);
     activations.resize(size);
@@ -32,11 +34,12 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
         Matrix<double> weights(architecture[i],architecture[i-1]);
         Matrix<double> biases(1,architecture[i]);
         if (i < arch.size()-1){
-            weights.apply(random);
-            biases.apply(random);
+            weights.apply(initRelu,seed,architecture[i-1],architecture[i]);
+//            bias set to 0 for relu
         } else {
-            weights.apply(random);
-            biases.apply(random);
+//            init softmax
+            weights.apply(initSoftmax,seed,architecture[i-1],architecture[i]);
+//            bias set to 0 for softmax
         }
 
         weightMatrices[i] = weights;
@@ -44,10 +47,27 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
     }
 }
 
-double Net::random(const double &example){
-//    TODO: robit inicializaciu vah pre kazdu vrstvu podla aktivacii
-//    np.random.randn(n_h, n_x) * np.sqrt(1. / n_x)
-    return (double)rand()/RAND_MAX + 1e-15;
+
+
+double Net::initRelu(const int& seed, const int& incoming, const int& cols){
+//kaiming initialization
+//    random(number incoming, cols) * math.sqrt( 2 / number incoming)
+
+    std::mt19937 gen(seed);
+    std::normal_distribution<> distrib(0, 1);
+    return distrib(gen) * sqrt( (double)2/incoming);
+
+//    return (double)rand()/RAND_MAX + 1e-15;
+//    return 0;
+}
+
+double Net::initSoftmax(const int& seed, const int& incoming, const int& cols){
+//xavier initialization
+//  uniform_random(-1,1) * match.sqrt(6/(incoming*cols)
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution<> distrib(-1, 1);
+    return distrib(gen) * sqrt( (double)6/(incoming * cols));
+//    return (double)rand()/RAND_MAX + 1e-15;
 }
 
 //double Net::randomRelu(const double &example){
@@ -105,14 +125,14 @@ double Net::batchCrossEntropy(const Matrix<double>& target) {
 
     for (int i = 0; i < target.getNumRows(); ++i) {
         for (int j = 0; j < activations.back().getNumRows(); ++j) {
-            if (activations.back()(j,i) <= 0){
-//                cout << "activation i="<<i<<" j="<<j<<" :"<<activations.back()(j,i)<<"\n";
-//                activations.back()(j,i) = 1e-15;
-                sum += target(i,j) * log(1e-15);
-            } else {
-                sum += target(i,j) * log(activations.back()(j,i));
-            }
-//            sum += target(i,j) * activations.back()(j,i);
+//            if (activations.back()(j,i) <= 0){
+////                cout << "activation i="<<i<<" j="<<j<<" :"<<activations.back()(j,i)<<"\n";
+////                activations.back()(j,i) = 1e-15;
+//                sum += target(i,j) * log(1e-15);
+//            } else {
+//                sum += target(i,j) * log(activations.back()(j,i));
+//            }
+            sum += target(i,j) * activations.back()(j,i);
         }
     }
 
@@ -203,28 +223,21 @@ double Net::backward(Matrix<double> &target){
 //        dz(y=4) = dz(y=5) * deriv_activ4(inner pot. 5) * w(4->5)
 //        dw(3->4) = dz(y=4) * deriv_activ4(inner potential 4) *y3
 
-//        dW = dZ.multiply(activations[i-1].transpose());
+
         dW = dZ.multiply(activations[i-1].transpose());
         //TODO: toto je navyse lebo batch size
         dW.multiplyNum(1/batchSize);
-//        dW = activations[i-1].transpose().multiply(dZ);
+
         dB = dZ;
 
-
-//        weightMatrices[i] = weightMatrices[i].minusAlloc(dW.multiplyNum(learningRate));
-//        weightMatrices[i].minus(dW.multiplyNumAlloc(learningRate));
         dW.multiplyNum(learningRate);
         weightMatrices[i].minus(dW);
-//        biasMatrices[i] = biasMatrices[i].minusAlloc(dB.flatMeanRows().multiplyNum(learningRate));
-//        biasMatrices[i].minus(dB.flatMeanRowsAlloc().multiplyNum(learningRate));
         dB.flatMeanRows();
-//        biasMatrices[i].minus(dB.multiplyNumAlloc(learningRate));
         dB.multiplyNum(learningRate);
         biasMatrices[i].minus(dB);
 
         if (i > 1){
             innerPotentials[i-1].apply(drelu);
-//            dZ = weightMatrices[i].transpose().multiply(dZ).multiplyCellsAlloc(innerPotentials[i-1]);
             dZ = weightMatrices[i].transpose().multiply(dZ);
             dZ.multiplyCells(innerPotentials[i-1]);
         }
