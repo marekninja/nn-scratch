@@ -27,16 +27,23 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
     innerPotentials.resize(size);
     biasMatrices.resize(size);
 
+//
+
     //init of weights and biases - input neurons do not have it
     for (int i = 1; i -1 < arch.size()-1; ++i) {
         Matrix<double> weights(architecture[i],architecture[i-1]);
         Matrix<double> biases(1,architecture[i]);
+
+        cout << biases.getData()[0][0] << biases.getData()[0][1] << endl;
+
+//        TODO preco tento if? robi sa to iste vsade..
+//        TODO (podla Kerasu) init weights by
         if (i < arch.size()-1){
             weights.apply(random);
-            biases.apply(random);
+//            biases.apply(random);
         } else {
             weights.apply(random);
-            biases.apply(random);
+//            biases.apply(random);
         }
 
         weightMatrices[i] = weights;
@@ -58,15 +65,23 @@ double Net::random(const double &example){
 //    return (double)rand()/RAND_MAX + 1e-15;
 //}
 
-//TODO: pozri ci je to spravne
+double Net::scale(const double &example) {
+    return example / (double)255;
+}
+
+
+/*
+ * Network activation functions
+ *
+ * Implemented: reLU, softmax
+ *
+ * */
+
+
 double Net::relu(const double &example) {
     return example > 0 ? example : 0;
 }
 
-double Net::scale(const double &example) {
-    return example / (double)255;
-}
-//TODO: pozri ci je to spravne
 double Net::drelu(const double &ex){
     return ex > 0 ? 1 : 0;
 }

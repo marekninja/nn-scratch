@@ -55,11 +55,9 @@ private:
 
     static double scale(const double &example);
 
+    // Activation functions
     static double relu(const double &example);
-
-
     static double drelu(const double &ex);
-
     static void softmax(vector<double> &output);
     static void dsoftmax(vector<double> &output);
 
@@ -77,8 +75,12 @@ public:
      * hidden neurons use ReLU activations
      * output is SoftMax
      */
-    Net(const vector<int> &arch, const int &batch_size,
-        const double &learning_rate, double beta_1=0.9, double beta_2=0.999, double epsilon_v=0.00000008);
+    Net(const vector<int> &arch,
+        const int &batch_size,
+        const double &learning_rate,
+        double beta_1=0.9,
+        double beta_2=0.999,
+        double epsilon_v=0.00000008);
 
     /*
      * Forward function
@@ -90,6 +92,7 @@ public:
      * e2 0 4 0 0
      * e3 ...
      */
+
     void forward(const Matrix<double> &input);
 
     /*

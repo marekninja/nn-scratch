@@ -2,12 +2,12 @@ using namespace std;
 
 #include "main.h"
 
-
 #include <iostream>
 #include <vector>
 #include <chrono>
 #include <cstdlib>
 #include <algorithm>
+#include <preprocessors/Scaler/Scaler.h>
 
 double random(const double &example){
     return (double)rand()/RAND_MAX + 1e-15;
@@ -94,7 +94,6 @@ void runTests(){
 //    matrixC.add(matrixD).print();
 }
 
-
 void runBenchmarks(){
     for (int i = 64; i <= 2048; i *= 2) {
         cout << "*** Size: "<<i<<" ***\n";
@@ -124,21 +123,31 @@ void runBenchmarks(){
 }
 
 void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs, const int& testPart, const int& testBatch){
+
     auto start3 = chrono::high_resolution_clock::now();
 
-    Csv csv = Csv();
-    Matrix<double> trainVectors = csv.load("..\\..\\data\\fashion_mnist_train_vectors.csv",trainPart);
-    vector<Matrix<double>> batches = trainVectors.splitToBatches(batchSize);
+    /*
+     * Load training data
+     * */
 
-    Matrix<double> trainLabels = csv.loadOneHot("..\\..\\data\\fashion_mnist_train_labels.csv",trainPart);
+    Csv csv = Csv();
+    Matrix<double> trainVectors = csv.load("..\\data\\fashion_mnist_train_vectors.csv", trainPart);
+    Matrix<double> trainLabels = csv.loadOneHot("..\\data\\fashion_mnist_train_labels.csv", trainPart);
+
+    //  Preprocess training data
+    //  - scale image vectors by /255
+
+    Scaler sc = Scaler(255);
+    trainVectors = sc.scale(trainVectors);
+
+    vector<Matrix<double>> batches = trainVectors.splitToBatches(batchSize);
     vector<Matrix<double>> batchesLabels = trainLabels.splitToBatches(batchSize);
 
-
-
-
-
     auto start = chrono::high_resolution_clock::now();
-    Net myNet = Net({784,1024,10},batchSize,0.001);
+
+    Net myNet = Net({784,784,10},batchSize,0.001);
+
+    return;
 //    myNet.forward(batches[0]);
 //    myNet.results().print();
 //    myNet.backward(batchesLabels[0]);
@@ -175,12 +184,18 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
     auto durationSec = chrono::duration_cast<chrono::seconds>(stop - start);
     auto durationMin = chrono::duration_cast<chrono::minutes>(stop - start);
 
+
+
+
+
+
+
     cout << "Training took: "<<durationMicro.count() << " microseconds => "<<durationSec.count()<< " seconds => " << durationMin.count() << " minutes\n";
 
-    Matrix<double> testVectors = csv.load("..\\..\\data\\fashion_mnist_test_vectors.csv",testPart);
+    Matrix<double> testVectors = csv.load("..\\data\\fashion_mnist_test_vectors.csv",testPart);
     vector<Matrix<double>> batchesTest = testVectors.splitToBatches(testBatch);
 //    csv.scaleData(trainVectors,255);
-    Matrix<double> testLabels = csv.load("..\\..\\data\\fashion_mnist_test_labels.csv",testPart);
+    Matrix<double> testLabels = csv.load("..\\data\\fashion_mnist_test_labels.csv",testPart);
 //    vector<Matrix<double>> batchesTestLabels = trainVectors.splitToBatches(100);
 
     vector<int> results;
