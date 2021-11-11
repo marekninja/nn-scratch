@@ -145,23 +145,22 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
 
     auto start = chrono::high_resolution_clock::now();
 
-    Net myNet = Net({784,784,10},batchSize,0.001);
+    Net myNet = Net(
+            {784,512,10},
+            batchSize,
+            0.001);
 
-    return;
-//    myNet.forward(batches[0]);
-//    myNet.results().print();
-//    myNet.backward(batchesLabels[0]);
-//    myNet.forward(batches[1]);
-//    myNet.results().print();
-//    myNet.backward(batchesLabels[1]);
     int epochs = numEpochs;
     double learning_rate = 0.01;
     for (int i = 0; i < epochs; ++i) {
 
-        if (i % 3 == 0){
+        // TODO zmenit za "change lr on plateau"
+        if (i % 27 == 0){
             learning_rate /= 10;
             myNet.setLearningRate(learning_rate);
+            cout << "Changin lr to " << learning_rate << endl;
         }
+
         cout << "***** Epoch: " << i << " start ******"<<endl;
         double sum_losses = 0.0;
 
@@ -193,6 +192,9 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
     cout << "Training took: "<<durationMicro.count() << " microseconds => "<<durationSec.count()<< " seconds => " << durationMin.count() << " minutes\n";
 
     Matrix<double> testVectors = csv.load("..\\data\\fashion_mnist_test_vectors.csv",testPart);
+
+    testVectors = sc.scale(testVectors);
+
     vector<Matrix<double>> batchesTest = testVectors.splitToBatches(testBatch);
 //    csv.scaleData(trainVectors,255);
     Matrix<double> testLabels = csv.load("..\\data\\fashion_mnist_test_labels.csv",testPart);
@@ -218,12 +220,12 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
     res = res.transpose();
 
     double acc = myNet.accuracy(res,testLabels);
-    cout << "Accuracy: "<< acc;
+    cout << "Accuracy: "<< acc << endl;
 
 
 //    csv.scaleData(trainLabels);
 
-    csv.save("..\\results\\test1.txt",res);
+//    csv.save("..\\results\\test1.txt",res);
 
     auto stop3 = chrono::high_resolution_clock::now();
     auto durationSec3 = chrono::duration_cast<chrono::seconds>(stop3 - start3);
@@ -247,5 +249,5 @@ int main(){
 //    runTests();
 //    runBenchmarks();
 //    runTraining(INT32_MAX,50,5,INT32_MAX, 200);
-    runTraining(10000,100,5,10000, 200);
+    runTraining(30000,200,30,10000, 1000);
 }

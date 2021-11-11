@@ -4,6 +4,8 @@ using namespace std;
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
+#include <initializers/Glorot/glorot_uniform.h>
+
 #pragma GCC optimize("Ofast")
 
 
@@ -30,20 +32,24 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
 //
 
     //init of weights and biases - input neurons do not have it
+    /*
+     *
+     * Weight matrices initialization
+     *
+     * - bias matrices are initialized to zero (and left that way)
+     * - weights are initialized withusing namespace std;
+     *
+     * */
     for (int i = 1; i -1 < arch.size()-1; ++i) {
         Matrix<double> weights(architecture[i],architecture[i-1]);
         Matrix<double> biases(1,architecture[i]);
 
-        cout << biases.getData()[0][0] << biases.getData()[0][1] << endl;
-
-//        TODO preco tento if? robi sa to iste vsade..
-//        TODO (podla Kerasu) init weights by
         if (i < arch.size()-1){
-            weights.apply(random);
-//            biases.apply(random);
+//            weights.apply(random);
+            weights = glorot_uniform_initializer(weights);
         } else {
-            weights.apply(random);
-//            biases.apply(random);
+//            weights.apply(random);
+            weights = glorot_uniform_initializer(weights);
         }
 
         weightMatrices[i] = weights;
@@ -84,6 +90,16 @@ double Net::relu(const double &example) {
 
 double Net::drelu(const double &ex){
     return ex > 0 ? 1 : 0;
+}
+
+double Net::leakyRelu(const double &example) {
+    const double alpha=0.05;
+    return example > 0 ? example : alpha*example;
+}
+
+double Net::dleakyRelu(const double &ex) {
+    const double alpha=0.05;
+    return ex > 0 ? 1 : alpha;
 }
 
 void Net::softmax(vector<double>& output) {
@@ -165,48 +181,33 @@ double Net::accuracy(const Matrix<double> &target) {
 }
 
 void Net::forward(const Matrix<double> &input) {
-//    cout << "forw" << endl;
-//    input.printShape();
 
     for (int i = 0; i < architecture.size(); ++i) {
-        if (i == 0){
-//            cout << "input" <<endl;
+
+        if (i == 0) {
             activations[i] = input;
             activations[i] = activations[i].transpose();
-            activations[i].apply(scale);
         }
 
         if (i != 0 && i < architecture.size()){
 
-//            TODO: mozno toto treba naopak nasobit, teda w * activation, a nie activation * w
-            innerPotentials[i] = weightMatrices[i]
-                    .multiply(activations[i-1]);
+            innerPotentials[i] = weightMatrices[i].multiply(activations[i-1]);
             innerPotentials[i].addToCol(biasMatrices[i]);
-//            innerPotentials[i] = weightMatrices[i]
-//                    .multiply(activations[i-1]).addToColAlloc(biasMatrices[i]);
-//            innerPotentials[i].addToCol(biasMatrices[i]);
-
             activations[i] = innerPotentials[i];
 
-
             if (i < architecture.size()-1){
-                activations[i].apply(relu);
+                activations[i].apply(leakyRelu);
             } else {
-//                activations[i].apply(softmax);
-//                activations[i] = activations[i].transpose().applySoftmax(softmax);
                 activations[i].applySoftmax(softmax);
             }
         }
     }
-//    activations.back().print();
+
 }
 
 //attempt at ADAM optimizer
 double Net::backward(Matrix<double> &target){
-//    cout << "back" << endl;
-//    cout<< "L: " << loss<<" ";
 
-//    Matrix<double> dZ = activations.back().minusAlloc(target.transpose());
     Matrix<double> dZ = activations.back();
     dZ.minus(target.transpose());
 
@@ -214,35 +215,27 @@ double Net::backward(Matrix<double> &target){
     Matrix<double> dB;
 
     for (int i = architecture.size()-1; i > 0 ; --i) {
-//        z = y = vysledok aktivacnej f.
-//        dz(y=4) = dz(y=5) * deriv_activ4(inner pot. 5) * w(4->5)
-//        dw(3->4) = dz(y=4) * deriv_activ4(inner potential 4) *y3
 
-//        dW = dZ.multiply(activations[i-1].transpose());
         dW = dZ.multiply(activations[i-1].transpose());
-        //TODO: toto je navyse lebo batch size
-        dW.multiplyNum(1/batchSize);
-//        dW = activations[i-1].transpose().multiply(dZ);
+
+        // Handle bias update
         dB = dZ;
-
-
-//        weightMatrices[i] = weightMatrices[i].minusAlloc(dW.multiplyNum(learningRate));
-//        weightMatrices[i].minus(dW.multiplyNumAlloc(learningRate));
-        dW.multiplyNum(learningRate);
-        weightMatrices[i].minus(dW);
-//        biasMatrices[i] = biasMatrices[i].minusAlloc(dB.flatMeanRows().multiplyNum(learningRate));
-//        biasMatrices[i].minus(dB.flatMeanRowsAlloc().multiplyNum(learningRate));
         dB.flatMeanRows();
-//        biasMatrices[i].minus(dB.multiplyNumAlloc(learningRate));
         dB.multiplyNum(learningRate);
         biasMatrices[i].minus(dB);
 
         if (i > 1){
-            innerPotentials[i-1].apply(drelu);
-//            dZ = weightMatrices[i].transpose().multiply(dZ).multiplyCellsAlloc(innerPotentials[i-1]);
+            innerPotentials[i-1].apply(dleakyRelu);
+
             dZ = weightMatrices[i].transpose().multiply(dZ);
             dZ.multiplyCells(innerPotentials[i-1]);
         }
+
+        dW.multiplyNum(1/batchSize);
+        dW.multiplyNum(learningRate);
+
+        weightMatrices[i].minus(dW);
+
     }
     double loss = batchCrossEntropy(target);
 //    cout<< "L: " << loss<<" ";
@@ -250,7 +243,6 @@ double Net::backward(Matrix<double> &target){
 //    cout<< "A: " <<acc<<" " << endl;
     return loss;
 }
-
 
 
 Matrix<int> Net::results() {

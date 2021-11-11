@@ -58,6 +58,8 @@ private:
     // Activation functions
     static double relu(const double &example);
     static double drelu(const double &ex);
+    static double leakyRelu(const double &example);
+    static double dleakyRelu(const double &ex);
     static void softmax(vector<double> &output);
     static void dsoftmax(vector<double> &output);
 

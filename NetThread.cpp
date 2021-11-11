@@ -138,7 +138,7 @@ void Net::forward(const Matrix<double> &input) {
 
 
             if (i < architecture.size()-1){
-                activations[i].apply(relu);
+                activations[i].apply(leakyRelu);
             } else {
 //                activations[i].apply(softmax);
 //                activations[i] = activations[i].transpose().applySoftmax(softmax);
@@ -172,7 +172,7 @@ double Net::backward(Matrix<double> &target){
         biasMatrices[i] = biasMatrices[i].minus(dB.flatMeanRows().multiplyNum(learningRate));
 
         if (i > 1){
-            innerPotentials[i-1].apply(drelu);
+            innerPotentials[i-1].apply(dleakyRelu);
             dZ = weightMatrices[i].transpose().multiplyThreads(dZ).multiplyCells(innerPotentials[i-1]);
         }
     }
