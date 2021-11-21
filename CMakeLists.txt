@@ -14,4 +14,4 @@ add_executable(pv021_project
         Csv.cpp
         Csv.h
 #        Operations.hpp
-        OperationsThreads.hpp preprocessors/Scaler/Scaler.cpp preprocessors/Scaler/Scaler.h initializers/Glorot/glorot_uniform.cpp initializers/Glorot/glorot_uniform.h)
+        OperationsThreads.hpp preprocessors/Scaler/Scaler.cpp preprocessors/Scaler/Scaler.h initializers/Glorot/glorot_uniform.cpp initializers/Glorot/glorot_uniform.h initializers/Kaiming/kaiming.cpp initializers/Kaiming/kaiming.h initializers/Xavier/xavier.cpp initializers/Xavier/xavier.h optimizers/Adam/adam.cpp optimizers/Adam/adam.h)

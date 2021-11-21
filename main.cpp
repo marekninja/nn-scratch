@@ -8,6 +8,7 @@ using namespace std;
 #include <cstdlib>
 #include <algorithm>
 #include <preprocessors/Scaler/Scaler.h>
+#include <optimizers/Adam/adam.h>
 
 double random(const double &example){
     return (double)rand()/RAND_MAX + 1e-15;
@@ -134,14 +135,20 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
     Matrix<double> trainVectors = csv.load("..\\data\\fashion_mnist_train_vectors.csv", trainPart);
     Matrix<double> trainLabels = csv.loadOneHot("..\\data\\fashion_mnist_train_labels.csv", trainPart);
 
+    cout << "- training data loaded ==> ";
+
     //  Preprocess training data
     //  - scale image vectors by /255
 
     Scaler sc = Scaler(255);
     trainVectors = sc.scale(trainVectors);
 
+    cout << "scaled ==> ";
+
     vector<Matrix<double>> batches = trainVectors.splitToBatches(batchSize);
     vector<Matrix<double>> batchesLabels = trainLabels.splitToBatches(batchSize);
+
+    cout << "split to batches" << endl;
 
     auto start = chrono::high_resolution_clock::now();
 
@@ -150,8 +157,11 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
             batchSize,
             0.001);
 
+    cout << "model initialized" << endl;
+
     int epochs = numEpochs;
     double learning_rate = 0.01;
+
     for (int i = 0; i < epochs; ++i) {
 
         // TODO zmenit za "change lr on plateau"
@@ -168,7 +178,7 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
             cout << j << " ";
             myNet.forward(batches[j]);
 
-            sum_losses += myNet.backward(batchesLabels[j]);
+            sum_losses += myNet.backward(batchesLabels[j], i);
 //            cout << "s: "<< sum_losses;
         }
         cout << endl;
@@ -246,8 +256,5 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
 
 
 int main(){
-//    runTests();
-//    runBenchmarks();
-//    runTraining(INT32_MAX,50,5,INT32_MAX, 200);
-    runTraining(30000,200,30,10000, 1000);
+    runTraining(60000,200,10,10000, 1000);
 }

@@ -5,6 +5,9 @@ using namespace std;
 #include <algorithm>
 #include <cstdlib>
 #include <initializers/Glorot/glorot_uniform.h>
+#include <initializers/Kaiming/kaiming.h>
+#include <initializers/Xavier/xavier.h>
+#include <optimizers/Adam/adam.h>
 
 #pragma GCC optimize("Ofast")
 
@@ -16,20 +19,28 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
 
     batchSize = batch_size;
     learningRate = learning_rate;
-    Vdw = 0.0;
-    Sdw = 0.0;
-    Vdb = 0.0;
-    Sdb = 0.0;
-    beta1 = beta_1;
-    beta2 = beta_2;
-    epsilon = epsilon_v;
+//    Vdw = 0.0;
+//    Sdw = 0.0;
+//    Vdb = 0.0;
+//    Sdb = 0.0;
 
+    seed = 5;
     weightMatrices.resize(size);
     activations.resize(size);
     innerPotentials.resize(size);
     biasMatrices.resize(size);
 
-//
+    // ADAM
+    beta1 = beta_1;
+    beta2 = beta_2;
+    epsilon = epsilon_v;
+
+    /// All initialized with zeros
+    mW.resize(size);     // First moment vectors    -   weights
+    vW.resize(size);     // Second moment vectors   -   weights
+    mB.resize(size);     // First moment vectors    -   biases
+    vB.resize(size);     // Second moment vectors   -   biases
+
 
     //init of weights and biases - input neurons do not have it
     /*
@@ -37,42 +48,37 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
      * Weight matrices initialization
      *
      * - bias matrices are initialized to zero (and left that way)
-     * - weights are initialized withusing namespace std;
+     * - weights are initialized with using namespace std;
      *
      * */
     for (int i = 1; i -1 < arch.size()-1; ++i) {
         Matrix<double> weights(architecture[i],architecture[i-1]);
         Matrix<double> biases(1,architecture[i]);
 
+        // ADAM
+        Matrix<double> mW_matrix(architecture[i],architecture[i-1]);
+        Matrix<double> vW_matrix(architecture[i],architecture[i-1]);
+        Matrix<double> mB_biases(1,architecture[i]);
+        Matrix<double> vB_biases(1,architecture[i]);
+
         if (i < arch.size()-1){
-//            weights.apply(random);
-            weights = glorot_uniform_initializer(weights);
+            // Initialize ReLU layers
+            kaiming_initializer(weights,seed*i,architecture[i-1],architecture[i]);
         } else {
-//            weights.apply(random);
-            weights = glorot_uniform_initializer(weights);
+            // Initialize Softmax layer
+            xavier_initializer(weights,seed*i,architecture[i-1],architecture[i]);
         }
 
         weightMatrices[i] = weights;
         biasMatrices[i]=biases.transpose();
+
+        // ADAM
+        mW[i] = mW_matrix;
+        vW[i] = vW_matrix;
+        mB[i] = mB_biases.transpose();
+        vB[i] = vB_biases.transpose();
+
     }
-}
-
-double Net::random(const double &example){
-//    TODO: robit inicializaciu vah pre kazdu vrstvu podla aktivacii
-//    np.random.randn(n_h, n_x) * np.sqrt(1. / n_x)
-    return (double)rand()/RAND_MAX + 1e-15;
-}
-
-//double Net::randomRelu(const double &example){
-//    return (double)rand()/RAND_MAX + 1e-15;
-//}
-//
-//double Net::randomSoft(const double &example){
-//    return (double)rand()/RAND_MAX + 1e-15;
-//}
-
-double Net::scale(const double &example) {
-    return example / (double)255;
 }
 
 
@@ -196,7 +202,7 @@ void Net::forward(const Matrix<double> &input) {
             activations[i] = innerPotentials[i];
 
             if (i < architecture.size()-1){
-                activations[i].apply(leakyRelu);
+                activations[i].apply(relu);
             } else {
                 activations[i].applySoftmax(softmax);
             }
@@ -205,42 +211,50 @@ void Net::forward(const Matrix<double> &input) {
 
 }
 
-//attempt at ADAM optimizer
-double Net::backward(Matrix<double> &target){
+double Net::backward(Matrix<double> &target, int &epoch){
 
-    Matrix<double> dZ = activations.back();
-    dZ.minus(target.transpose());
-
+    // Init helper matrices
     Matrix<double> dW;
     Matrix<double> dB;
+    Matrix<double> dZ;
+
+    // Derivation of Softmax & Cross Entropy loss
+    //  => dLoss/dZ = predictions - truth
+    dZ = activations.back();    // <== returns the last element in vector == in this case model's predictions
+    dZ.minus(target.transpose());
 
     for (int i = architecture.size()-1; i > 0 ; --i) {
 
         dW = dZ.multiply(activations[i-1].transpose());
 
-        // Handle bias update
         dB = dZ;
         dB.flatMeanRows();
-        dB.multiplyNum(learningRate);
-        biasMatrices[i].minus(dB);
 
+        // ADAM
+        biasMatrices[i].minus(adam(mB[i], vB[i], dB, beta1, beta2, epsilon, epoch, learningRate));
+
+//        dB.multiplyNum(learningRate);
+//        biasMatrices[i].minus(dB);
+
+        // For all hidden layers:
         if (i > 1){
-            innerPotentials[i-1].apply(dleakyRelu);
+            innerPotentials[i-1].apply(drelu);
 
             dZ = weightMatrices[i].transpose().multiply(dZ);
             dZ.multiplyCells(innerPotentials[i-1]);
         }
 
         dW.multiplyNum(1/batchSize);
-        dW.multiplyNum(learningRate);
 
-        weightMatrices[i].minus(dW);
+        // ADAM
+        weightMatrices[i].minus(adam(mW[i], vW[i], dW, beta1, beta2, epsilon, epoch, learningRate));
+
+//        dW.multiplyNum(learningRate);
+//        weightMatrices[i].minus(dW);
 
     }
+
     double loss = batchCrossEntropy(target);
-//    cout<< "L: " << loss<<" ";
-//    double acc = accuracy(target);
-//    cout<< "A: " <<acc<<" " << endl;
     return loss;
 }
 

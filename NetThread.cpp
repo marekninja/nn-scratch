@@ -20,6 +20,7 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
     beta1 = beta_1;
     beta2 = beta_2;
     epsilon = epsilon_v;
+    seed = 5;
 
     weightMatrices.resize(size);
     activations.resize(size);
@@ -31,11 +32,9 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
         Matrix<double> weights(architecture[i],architecture[i-1]);
         Matrix<double> biases(1,architecture[i]);
         if (i < arch.size()-1){
-            weights.apply(random);
-            biases.apply(random);
+            kaiming_initializer(weights,seed*i,architecture[i-1],architecture[i]);
         } else {
-            weights.apply(random);
-            biases.apply(random);
+            xavier_initializer(weights,seed*i,architecture[i-1],architecture[i]);
         }
 
         weightMatrices[i] = weights;
@@ -46,14 +45,6 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
 double Net::random(const double &example){
     return (double)rand()/RAND_MAX + 1e-15;
 }
-
-//double Net::randomRelu(const double &example){
-//    return (double)rand()/RAND_MAX + 1e-15;
-//}
-//
-//double Net::randomSoft(const double &example){
-//    return (double)rand()/RAND_MAX + 1e-15;
-//}
 
 double Net::relu(const double &example) {
     return 0 > example ? example : 0;
@@ -122,31 +113,27 @@ void Net::forward(const Matrix<double> &input) {
 //    input.printShape();
 
     for (int i = 0; i < architecture.size(); ++i) {
-        if (i == 0){
-//            cout << "input" <<endl;
+
+        if (i == 0) {
             activations[i] = input;
             activations[i] = activations[i].transpose();
-            activations[i].apply(scale);
         }
 
         if (i != 0 && i < architecture.size()){
 
-//            TODO: mozno toto treba naopak nasobit, teda w * activation, a nie activation * w
             innerPotentials[i] = weightMatrices[i]
                     .multiplyThreads(activations[i-1]).addToCol(biasMatrices[i]);
             activations[i] = innerPotentials[i];
 
 
             if (i < architecture.size()-1){
-                activations[i].apply(leakyRelu);
+                activations[i].apply(relu);
             } else {
-//                activations[i].apply(softmax);
-//                activations[i] = activations[i].transpose().applySoftmax(softmax);
                 activations[i].applySoftmax(softmax);
             }
         }
     }
-//    activations.back().print();
+
 }
 
 //attempt at ADAM optimizer

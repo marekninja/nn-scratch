@@ -17,6 +17,7 @@ private:
     vector<int> architecture;
     double batchSize;
     double learningRate;
+    int seed;
 
     ///vector of matrices of (incoming) weights
     vector<Matrix<double>> weightMatrices;
@@ -43,13 +44,20 @@ private:
     /// only for storage purps.
     vector<Matrix<double>> innerPotentials;
 
-    double Vdw = 0.0;
-    double Sdw = 0.0;
-    double Vdb = 0.0;
-    double Sdb = 0.0;
+//    double Vdw = 0.0;
+//    double Sdw = 0.0;
+//    double Vdb = 0.0;
+//    double Sdb = 0.0;
+
+    /// ADAM
     double beta1;
     double beta2;
     double epsilon;
+
+    vector<Matrix<double>> mW;
+    vector<Matrix<double>> vW;
+    vector<Matrix<double>> mB;
+    vector<Matrix<double>> vB;
 
     static double random(const double &example);
 
@@ -65,8 +73,6 @@ private:
 
 
 public:
-//    topology
-// batch size treba implementovat
 
     /*
      * Neural Net constructor
@@ -106,7 +112,7 @@ public:
      * ex2 1 ...
      * ex3 ...
      */
-    double backward(Matrix<double> &target);
+    double backward(Matrix<double> &target, int &epoch);
 
     /*
      * Returns predictions of network
