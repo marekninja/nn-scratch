@@ -14,7 +14,7 @@ Csv::Csv() {
 }
 
 Matrix<double> Csv::load(const string& path_to_file, const int& part) {
-    cout << "loading dataset..." << endl;
+    cout << "loading dataset... => " << path_to_file << endl;
 
     ifstream inputFile(path_to_file);
 

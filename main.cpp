@@ -7,121 +7,119 @@ using namespace std;
 #include <chrono>
 #include <cstdlib>
 #include <algorithm>
-#include <preprocessors/Scaler/Scaler.h>
-#include <optimizers/Adam/adam.h>
 
 double random(const double &example){
     return (double)rand()/RAND_MAX + 1e-15;
 }
 
-void runTests(){
-    int size = 2;
-    vector<vector<double>> data;
-    for (int j = 0; j < size; ++j) {
-        vector<double> row(size);
-        std::transform(row.begin(), row.end(), row.begin(), random);
-        data.push_back(row);
-    }
-    Matrix<double> mat(size,size,data);
-    Matrix<double> mat2(mat);
-    Matrix<double>::compare(mat,mat2,"init..");
-
-    Matrix<double> mN = mat.multiplyNaive(mat2);
-    Matrix<double> mT = mat.multiply(mat2);
-
-    Matrix<double>::compare(mN,mT,"multiply");
-
-    mN = Matrix<double>(mat);
-    mT = Matrix<double>(mat2);
-    Matrix<double>::compare(mN,mT,"init flatMeanRows");
-    mN = mN.flatMeanRowsAlloc();
-    mT.flatMeanRows();
-    Matrix<double>::compare(mN,mT,"flatMeanRows");
-
-    mN = Matrix<double>(mat);
-    mT = Matrix<double>(mat2);
-    Matrix<double>::compare(mN,mT,"ini multiplyCells");
-
-    mN = mN.multiplyCellsAlloc(mat);
-    mT.multiplyCells(mat2);
-    Matrix<double>::compare(mN,mT,"multiplyCells");
-
-    mN = Matrix<double>(mat);
-    mT = Matrix<double>(mat2);
-    Matrix<double>::compare(mN,mT,"init multiplyNum");
-
-    mN = mN.multiplyNumAlloc(4.0);
-    mT.multiplyNum(4.0);
-    Matrix<double>::compare(mN,mT,"multiplyNum");
-
-    mN = Matrix<double>(mat);
-    mT = Matrix<double>(mat2);
-    Matrix<double>::compare(mN,mT,"init minus");
-    mN = mN.minusAlloc(mat);
-    mT.minus(mat2);
-    Matrix<double>::compare(mN,mT,"minus");
-
-    mN = Matrix<double>(mat);
-    mT = Matrix<double>(mat2);
-    Matrix<double>::compare(mN,mT,"init addToCol");
-    mN = mN.addToColAlloc(mat);
-    mT.addToCol(mat2);
-    Matrix<double>::compare(mN,mT,"addToCol");
-
-
-
-//    Matrix<double> matrixA(2,3,A);
-////////    (int,int,class std::vector<class std::vector<double,class std::allocator<double> >,class std::allocator<class std::vector<double,class std::allocator<double> > > > const &)
-////    matrixA.fillup(2,3,A);
-//    matrixA.print();
+//void runTests(){
+//    int size = 2;
+//    vector<vector<double>> data;
+//    for (int j = 0; j < size; ++j) {
+//        vector<double> row(size);
+//        std::transform(row.begin(), row.end(), row.begin(), random);
+//        data.push_back(row);
+//    }
+//    Matrix<double> mat(size,size,data);
+//    Matrix<double> mat2(mat);
+//    Matrix<double>::compare(mat,mat2,"init..");
+//
+//    Matrix<double> mN = mat.multiplyNaive(mat2);
+//    Matrix<double> mT = mat.multiply(mat2);
+//
+//    Matrix<double>::compare(mN,mT,"multiply");
+//
+//    mN = Matrix<double>(mat);
+//    mT = Matrix<double>(mat2);
+//    Matrix<double>::compare(mN,mT,"init flatMeanRows");
+//    mN = mN.flatMeanRowsAlloc();
+//    mT.flatMeanRows();
+//    Matrix<double>::compare(mN,mT,"flatMeanRows");
+//
+//    mN = Matrix<double>(mat);
+//    mT = Matrix<double>(mat2);
+//    Matrix<double>::compare(mN,mT,"ini multiplyCells");
+//
+//    mN = mN.multiplyCellsAlloc(mat);
+//    mT.multiplyCells(mat2);
+//    Matrix<double>::compare(mN,mT,"multiplyCells");
+//
+//    mN = Matrix<double>(mat);
+//    mT = Matrix<double>(mat2);
+//    Matrix<double>::compare(mN,mT,"init multiplyNum");
+//
+//    mN = mN.multiplyNumAlloc(4.0);
+//    mT.multiplyNum(4.0);
+//    Matrix<double>::compare(mN,mT,"multiplyNum");
+//
+//    mN = Matrix<double>(mat);
+//    mT = Matrix<double>(mat2);
+//    Matrix<double>::compare(mN,mT,"init minus");
+//    mN = mN.minusAlloc(mat);
+//    mT.minus(mat2);
+//    Matrix<double>::compare(mN,mT,"minus");
+//
+//    mN = Matrix<double>(mat);
+//    mT = Matrix<double>(mat2);
+//    Matrix<double>::compare(mN,mT,"init addToCol");
+//    mN = mN.addToColAlloc(mat);
+//    mT.addToCol(mat2);
+//    Matrix<double>::compare(mN,mT,"addToCol");
+//
+//
+//
+////    Matrix<double> matrixA(2,3,A);
+//////////    (int,int,class std::vector<class std::vector<double,class std::allocator<double> >,class std::allocator<class std::vector<double,class std::allocator<double> > > > const &)
+//////    matrixA.fillup(2,3,A);
+////    matrixA.print();
+//////////
+////    Matrix<double> matrixB(3,2,B);
+////    cout << "\n";
+////    matrixB.print();
 ////////
-//    Matrix<double> matrixB(3,2,B);
-//    cout << "\n";
-//    matrixB.print();
-//////
-//    cout << endl;
-//    matrixA.multiplyNaive(matrixB).print();
+////    cout << endl;
+////    matrixA.multiplyNaive(matrixB).print();
+////
+////    cout << endl;
+////
+////    matrixA.multiply(matrixB).print();
+////
+////
+////    vector<vector<double>> C{{1.0,0.0},{-1.0,3.0}};
+////    vector<vector<double>> D{{3,1},{2,1}};
+////
+////    Matrix<double> matrixC(2,2,C);
+////    Matrix<double> matrixD(2,2,D);
+////    matrixC.add(matrixD).print();
+//}
 //
-//    cout << endl;
+//void runBenchmarks(){
+//    for (int i = 64; i <= 2048; i *= 2) {
+//        cout << "*** Size: "<<i<<" ***\n";
+//        vector<vector<double>> data;
+//        for (int j = 0; j < i; ++j) {
+//            vector<double> row(i,1.0);
+//            data.push_back(row);
+//        }
+//        Matrix<double> mat(i,i,data);
+//        Matrix<double> mat2(mat);
+//        auto start = chrono::high_resolution_clock::now();
+//        Matrix<double> mN = mat.multiplyNaive(mat2);
+//        auto stop = chrono::high_resolution_clock::now();
+//        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+//        cout << "Naive:     "<<duration.count() << "\n";
 //
-//    matrixA.multiply(matrixB).print();
+//        auto start2 = chrono::high_resolution_clock::now();
 //
+//        Matrix<double> mT = mat.multiply(mat2);
 //
-//    vector<vector<double>> C{{1.0,0.0},{-1.0,3.0}};
-//    vector<vector<double>> D{{3,1},{2,1}};
+//        auto stop2 = chrono::high_resolution_clock::now();
+//        auto duration2 = chrono::duration_cast<chrono::microseconds>(stop2 - start2);
+//        cout << "Threads:   "<< duration2.count() << "\n";
 //
-//    Matrix<double> matrixC(2,2,C);
-//    Matrix<double> matrixD(2,2,D);
-//    matrixC.add(matrixD).print();
-}
-
-void runBenchmarks(){
-    for (int i = 64; i <= 2048; i *= 2) {
-        cout << "*** Size: "<<i<<" ***\n";
-        vector<vector<double>> data;
-        for (int j = 0; j < i; ++j) {
-            vector<double> row(i,1.0);
-            data.push_back(row);
-        }
-        Matrix<double> mat(i,i,data);
-        Matrix<double> mat2(mat);
-        auto start = chrono::high_resolution_clock::now();
-        Matrix<double> mN = mat.multiplyNaive(mat2);
-        auto stop = chrono::high_resolution_clock::now();
-        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-        cout << "Naive:     "<<duration.count() << "\n";
-
-        auto start2 = chrono::high_resolution_clock::now();
-
-        Matrix<double> mT = mat.multiply(mat2);
-
-        auto stop2 = chrono::high_resolution_clock::now();
-        auto duration2 = chrono::duration_cast<chrono::microseconds>(stop2 - start2);
-        cout << "Threads:   "<< duration2.count() << "\n";
-
-    }
-
-}
+//    }
+//
+//}
 
 void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs, const int& testPart, const int& testBatch){
 
@@ -132,8 +130,8 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
      * */
 
     Csv csv = Csv();
-    Matrix<double> trainVectors = csv.load("..\\data\\fashion_mnist_train_vectors.csv", trainPart);
-    Matrix<double> trainLabels = csv.loadOneHot("..\\data\\fashion_mnist_train_labels.csv", trainPart);
+    Matrix<double> trainVectors = csv.load("../data/fashion_mnist_train_vectors.csv", trainPart);
+    Matrix<double> trainLabels = csv.loadOneHot("../data/fashion_mnist_train_labels.csv", trainPart);
 
     cout << "- training data loaded ==> ";
 
@@ -186,7 +184,7 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
         sum_losses /= batchesLabels.size();
 
         cout << "Loss: " << sum_losses << endl;
-//        csv.save(".\\results\\train_attempt"+ to_string(i)+".txt",myNet.results());
+//        csv.save("./results/train_attempt"+ to_string(i)+".txt",myNet.results());
     }
     auto stop = chrono::high_resolution_clock::now();
     auto durationMicro = chrono::duration_cast<chrono::microseconds>(stop - start);
@@ -195,19 +193,15 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
 
 
 
-
-
-
-
     cout << "Training took: "<<durationMicro.count() << " microseconds => "<<durationSec.count()<< " seconds => " << durationMin.count() << " minutes\n";
 
-    Matrix<double> testVectors = csv.load("..\\data\\fashion_mnist_test_vectors.csv",testPart);
+    Matrix<double> testVectors = csv.load("../data/fashion_mnist_test_vectors.csv",testPart);
 
     testVectors = sc.scale(testVectors);
 
     vector<Matrix<double>> batchesTest = testVectors.splitToBatches(testBatch);
 //    csv.scaleData(trainVectors,255);
-    Matrix<double> testLabels = csv.load("..\\data\\fashion_mnist_test_labels.csv",testPart);
+    Matrix<double> testLabels = csv.load("../data/fashion_mnist_test_labels.csv",testPart);
 //    vector<Matrix<double>> batchesTestLabels = trainVectors.splitToBatches(100);
 
     vector<int> results;
@@ -235,7 +229,7 @@ void runTraining(const int& trainPart, const int &batchSize,const int&numEpochs,
 
 //    csv.scaleData(trainLabels);
 
-//    csv.save("..\\results\\test1.txt",res);
+//    csv.save("../results/test1.txt",res);
 
     auto stop3 = chrono::high_resolution_clock::now();
     auto durationSec3 = chrono::duration_cast<chrono::seconds>(stop3 - start3);

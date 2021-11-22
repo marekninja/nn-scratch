@@ -3,6 +3,7 @@
 //
 
 #include "adam.h"
+#include <cmath>
 
 Matrix<double> adam(Matrix<double>& m,
                     Matrix<double>& v,

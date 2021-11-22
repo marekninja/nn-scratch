@@ -7,6 +7,7 @@ using namespace std;
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <cmath>
 #include <thread>
 #define THREAD_ROWS 20
 

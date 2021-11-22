@@ -10,6 +10,10 @@ using namespace std;
 #include <vector>
 #include "OperationsThreads.hpp"
 
+#include "xavier.h"
+#include "kaiming.h"
+#include "adam.h"
+
 
 class Net {
 private:

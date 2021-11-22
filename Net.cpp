@@ -1,13 +1,11 @@
 using namespace std;
+
 #include "Net.h"
+
 #include <cmath>
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
-#include <initializers/Glorot/glorot_uniform.h>
-#include <initializers/Kaiming/kaiming.h>
-#include <initializers/Xavier/xavier.h>
-#include <optimizers/Adam/adam.h>
 
 #pragma GCC optimize("Ofast")
 
