@@ -7,6 +7,7 @@
 
 #include "Net.h"
 #include "Csv.h"
+#include "Scaler.h"
 #include "OperationsThreads.hpp"
 #include "Scenario.h"
 

@@ -23,79 +23,80 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
 //    seed = 5;
     seed = 42;
 
+//    Vdw = 0.0;
+//    Sdw = 0.0;
+//    Vdb = 0.0;
+//    Sdb = 0.0;
 
     weightMatrices.resize(size);
     activations.resize(size);
     innerPotentials.resize(size);
     biasMatrices.resize(size);
 
+    // ADAM
+    beta1 = beta_1;
+    beta2 = beta_2;
+    epsilon = epsilon_v;
+
+    /// All initialized with zeros
+    mW.resize(size);     // First moment vectors    -   weights
+    vW.resize(size);     // Second moment vectors   -   weights
+    mB.resize(size);     // First moment vectors    -   biases
+    vB.resize(size);     // Second moment vectors   -   biases
+
+
     //init of weights and biases - input neurons do not have it
+    /*
+     *
+     * Weight matrices initialization
+     *
+     * - bias matrices are initialized to zero (and left that way)
+     * - weights are initialized with using namespace std;
+     *
+     * */
     for (int i = 1; i -1 < arch.size()-1; ++i) {
         Matrix<double> weights(architecture[i],architecture[i-1]);
         Matrix<double> biases(1,architecture[i]);
-        if (i < arch.size()-1){
-            initRelu(weights,seed*i,architecture[i-1],architecture[i]);
-//            bias set to 0 for relu
-        } else {
-//            init softmax
 
-            initSoftmax(weights,seed*i,architecture[i-1],architecture[i]);
-//            bias set to 0 for softmax
+        // ADAM
+        Matrix<double> mW_matrix(architecture[i],architecture[i-1]);
+        Matrix<double> vW_matrix(architecture[i],architecture[i-1]);
+        Matrix<double> mB_biases(1,architecture[i]);
+        Matrix<double> vB_biases(1,architecture[i]);
+
+        if (i < arch.size()-1){
+            // Initialize ReLU layers
+            kaiming_initializer(weights,seed*i,architecture[i-1],architecture[i]);
+        } else {
+            // Initialize Softmax layer
+            xavier_initializer(weights,seed*i,architecture[i-1],architecture[i]);
         }
 
         weightMatrices[i] = weights;
         biasMatrices[i]=biases.transpose();
+
+        // ADAM
+        mW[i] = mW_matrix;
+        vW[i] = vW_matrix;
+        mB[i] = mB_biases.transpose();
+        vB[i] = vB_biases.transpose();
+
     }
 }
 
 
+/*
+ * Network activation functions
+ *
+ * Implemented: reLU, softmax
+ *
+ * */
 
-void Net::initRelu(Matrix<double>& weights, const int& seed, const int& incoming, const int& cols){
-//kaiming initialization
-//    random(number incoming, cols) * math.sqrt( 2 / number incoming)
 
-    std::mt19937 gen(seed);
-    std::normal_distribution<> distrib(0, 1);
-
-    for (int i = 0; i < weights.getNumRows(); ++i) {
-        for (int j = 0; j < weights.getNumCols(); ++j) {
-            double num = distrib(gen) * sqrt( (double)2/incoming);
-            weights(i,j) = num;
-        }
-    }
-//    return (double)rand()/RAND_MAX + 1e-15;
-//    return 0;
-}
-
-void Net::initSoftmax(Matrix<double>& weights, const int& seed, const int& incoming, const int& cols){
-//xavier initialization
-//  uniform_random(-1,1) * match.sqrt(6/(incoming*cols)
-    std::mt19937 gen(seed);
-    std::uniform_real_distribution<> distrib(-1, 1);
-
-    for (int i = 0; i < weights.getNumRows(); ++i) {
-        for (int j = 0; j < weights.getNumCols(); ++j) {
-            double num = distrib(gen) * sqrt( (double)6/(incoming * cols));
-            weights(i,j) = num;
-        }
-    }
-//    double num = distrib(gen) * sqrt( (double)6/(incoming * cols));
-//    double num1 = distrib(gen) * sqrt( (double)6/(incoming * cols));
-//    double num2 = distrib(gen) * sqrt( (double)6/(incoming * cols));
-//    double num3 = distrib(gen) * sqrt( (double)6/(incoming * cols));
-//    return num;
-//    return (double)rand()/RAND_MAX + 1e-15;
-}
-
-//TODO: pozri ci je to spravne
 double Net::relu(const double &example) {
     return example > 0 ? example : 0;
 }
 
-double Net::scale(const double &example) {
-    return example / (double)255;
-}
-//TODO: pozri ci je to spravne
 double Net::drelu(const double &ex){
     return ex > 0 ? 1 : 0;
 }
@@ -181,70 +182,58 @@ double Net::accuracy(const Matrix<int> &result, const Matrix<double> &target) {
     return correct / result.getNumRows();
 }
 
+//TODO: skontrolovat accuracy ci dobre rata
+
 void Net::forward(const Matrix<double> &input) {
-//    cout << "forw" << endl;
-//    input.printShape();
 
     for (int i = 0; i < architecture.size(); ++i) {
-        if (i == 0){
-//            cout << "input" <<endl;
+
+        if (i == 0) {
             activations[i] = input;
             activations[i] = activations[i].transpose();
-            activations[i].apply(scale);
         }
 
         if (i != 0 && i < architecture.size()){
 
-//            TODO: mozno toto treba naopak nasobit, teda w * activation, a nie activation * w
-            innerPotentials[i] = weightMatrices[i]
-                    .multiply(activations[i-1]);
+            innerPotentials[i] = weightMatrices[i].multiply(activations[i-1]);
             innerPotentials[i].addToCol(biasMatrices[i]);
-//            innerPotentials[i] = weightMatrices[i]
-//                    .multiply(activations[i-1]).addToColAlloc(biasMatrices[i]);
-//            innerPotentials[i].addToCol(biasMatrices[i]);
-
             activations[i] = innerPotentials[i];
-
 
             if (i < architecture.size()-1){
                 activations[i].apply(relu);
             } else {
-//                activations[i].apply(softmax);
-//                activations[i] = activations[i].transpose().applySoftmax(softmax);
                 activations[i].applySoftmax(softmax);
             }
         }
     }
-//    activations.back().print();
+
 }
 
-//attempt at ADAM optimizer
-double Net::backward(Matrix<double> &target){
-//    cout << "back" << endl;
-//    cout<< "L: " << loss<<" ";
+double Net::backward(Matrix<double> &target, int &epoch){
 
-//    Matrix<double> dZ = activations.back().minusAlloc(target.transpose());
-    Matrix<double> dZ = activations.back();
-    dZ.minus(target.transpose());
-
+    // Init helper matrices
     Matrix<double> dW;
     Matrix<double> dB;
+    Matrix<double> dZ;
+
+    // Derivation of Softmax & Cross Entropy loss
+    //  => dLoss/dZ = predictions - truth
+    dZ = activations.back();    // <== returns the last element in vector == in this case model's predictions
+    dZ.minus(target.transpose());
 
     for (int i = architecture.size()-1; i > 0 ; --i) {
-//        z = y = vysledok aktivacnej f.
-//        dz(y=4) = dz(y=5) * deriv_activ4(inner pot. 5) * w(4->5)
-//        dw(3->4) = dz(y=4) * deriv_activ4(inner potential 4) *y3
-
 
         dW = dZ.multiply(activations[i-1].transpose());
-        //TODO: toto je navyse lebo batch size
-
-
         dB = dZ;
         dB.flatMeanRows();
-        dB.multiplyNum(learningRate);
-        biasMatrices[i].minus(dB);
 
+        // ADAM
+        biasMatrices[i].minus(adam(mB[i], vB[i], dB, beta1, beta2, epsilon, epoch, learningRate));
+
+//        dB.multiplyNum(learningRate);
+//        biasMatrices[i].minus(dB);
+
+        // For all hidden layers:
         if (i > 1){
             innerPotentials[i-1].apply(drelu);
 
@@ -254,17 +243,17 @@ double Net::backward(Matrix<double> &target){
 
         dW.multiplyNum(1/batchSize);
 
-        dW.multiplyNum(learningRate);
-        weightMatrices[i].minus(dW);
+        // ADAM
+        weightMatrices[i].minus(adam(mW[i], vW[i], dW, beta1, beta2, epsilon, epoch, learningRate));
+
+//        dW.multiplyNum(learningRate);
+//        weightMatrices[i].minus(dW);
 
     }
+
     double loss = batchCrossEntropy(target);
-//    cout<< "L: " << loss<<" ";
-//    double acc = accuracy(target);
-//    cout<< "A: " <<acc<<" " << endl;
     return loss;
 }
-
 
 
 Matrix<int> Net::results() {

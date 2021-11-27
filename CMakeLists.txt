@@ -13,4 +13,15 @@ add_executable(pv021_project
         Net.h
         Csv.cpp
         Csv.h
-        OperationsThreads.hpp Scenario.h Scenario.cpp)
+#        Operations.hpp
+        OperationsThreads.hpp
+        Scaler.cpp
+        Scaler.h
+        kaiming.cpp
+        kaiming.h
+        xavier.cpp
+        xavier.h
+        adam.cpp
+        adam.h
+        Scenario.h
+        Scenario.cpp)
