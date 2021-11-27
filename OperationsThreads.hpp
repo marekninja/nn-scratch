@@ -26,8 +26,6 @@ public:
         matData.resize(num_rows);
 
         for (int i = 0; i < matData.size(); ++i) {
-            //TODO: treba skontrolovat, ze ci nema byt nula nastavena
-            //matData[i].resize(num_cols,0.0);
             matData[i].resize(num_cols);
         }
 
@@ -368,7 +366,21 @@ public:
         }
     }
 
-    Matrix<T> add(const Matrix &other){
+    void add(const Matrix &other){
+        if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
+            throw runtime_error("Can not add() matrices of different shape!");
+        }
+        int cols = numCols;
+        int rows = numRows;
+
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                this->matData[i][j] += other(i,j);
+            }
+        }
+    };
+
+    Matrix<T> addAlloc(const Matrix &other){
         if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
             throw runtime_error("Can not add() matrices of different shape!");
         }

@@ -1,4 +1,4 @@
-using namespace std;
+//using namespace std;
 
 #include "Scaler.h"
 
@@ -31,4 +31,4 @@ Matrix<double> Scaler::scale(Matrix<double> &matrix) {
     }
 
     return Matrix<double>(matrix.getNumRows(), matrix.getNumCols(), data);
-};
+}

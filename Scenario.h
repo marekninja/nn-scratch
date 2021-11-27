@@ -8,6 +8,7 @@
 #include "OperationsThreads.hpp"
 #include "Csv.h"
 #include "Net.h"
+#include "Scaler.h"
 
 void runTests();
 

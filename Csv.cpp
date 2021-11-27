@@ -1,7 +1,7 @@
 //
 // Created by marek on 10/26/2021.
 //
-//using namespace std;
+using namespace std;
 
 #include "Csv.h"
 #include <vector>

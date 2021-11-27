@@ -121,12 +121,12 @@ void Net::softmax(vector<double>& output) {
     }
 }
 
-void Net::dsoftmax(vector<double>& output) {
-    double sum = 0;
-    for (int i = 0; i < output.size(); ++i) {
-        output[i] = output[i] *( 1 - output[i]);
-    }
-}
+//void Net::dsoftmax(vector<double>& output) {
+//    double sum = 0;
+//    for (int i = 0; i < output.size(); ++i) {
+//        output[i] = output[i] *( 1 - output[i]);
+//    }
+//}
 
 //TODO: dava divne vysledky, ako riesit zaporne aktivacie a 0?
 //TODO: ako je vobec mozne ze vystupna aktivacia je zaporna/nulova??
@@ -150,21 +150,21 @@ double Net::batchCrossEntropy(const Matrix<double>& target) {
 }
 
 //accuracy of one hot
-double Net::accuracy(const Matrix<double> &target) {
-    int correct = 0;
-//    cout<<"activations:\n";
-//    activations.back().print();
-//    cout << "target:\n";
-//    target.print();
-    for (int i = 0; i < target.getNumRows(); ++i) {
-        for (int j = 0; j < activations.back().getNumRows(); ++j) {
-            if (target(i,j) == 1 && activations.back()(j,i) == target(i,j)){
-                correct++;
-            }
-        }
-    }
-    return ((double)correct/target.getNumRows())*100;
-}
+//double Net::accuracy(const Matrix<double> &target) {
+//    int correct = 0;
+////    cout<<"activations:\n";
+////    activations.back().print();
+////    cout << "target:\n";
+////    target.print();
+//    for (int i = 0; i < target.getNumRows(); ++i) {
+//        for (int j = 0; j < activations.back().getNumRows(); ++j) {
+//            if (target(i,j) == 1 && activations.back()(j,i) == target(i,j)){
+//                correct++;
+//            }
+//        }
+//    }
+//    return ((double)correct/target.getNumRows())*100;
+//}
 
 double Net::accuracy(const Matrix<int> &result, const Matrix<double> &target) {
     if (result.getNumRows() != target.getNumRows()){

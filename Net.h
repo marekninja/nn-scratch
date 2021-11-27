@@ -130,7 +130,7 @@ public:
 
     void setLearningRate(const double& learning_rate);
     double batchCrossEntropy(const Matrix<double>& target);
-    double accuracy(const Matrix<double> &target);
+//    double accuracy(const Matrix<double> &target);
     static double accuracy(const Matrix<int>& result, const Matrix<double> &target);
 };
 

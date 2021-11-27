@@ -104,7 +104,11 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
     auto start3 = chrono::high_resolution_clock::now();
 
     Csv csv = Csv();
+    Scaler sc = Scaler(255);
+
     Matrix<double> trainVectors = csv.load(trainDataPath,trainPart);
+    trainVectors = sc.scale(trainVectors);
+
     vector<Matrix<double>> batches = trainVectors.splitToBatches(batchSize);
 
     Matrix<double> trainLabels = csv.loadOneHot(trainLabelsPath,trainPart);
@@ -130,7 +134,7 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
             cout << j << " ";
             myNet.forward(batches[j]);
 
-            sum_losses += myNet.backward(batchesLabels[j]);
+            sum_losses += myNet.backward(batchesLabels[j], i);
 //            cout << "s: "<< sum_losses;
         }
         cout << endl;
@@ -140,6 +144,23 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
         cout << "Loss: " << sum_losses << endl;
 //        csv.save(".\\results\\train_attempt"+ to_string(i)+".txt",myNet.results());
     }
+
+    vector<int> trainResults;
+    for (int j = 0; j < batchesLabels.size(); ++j) {
+        cout << j << " ";
+        myNet.forward(batches[j]);
+        vector<int> out = myNet.results().transpose().getData()[0];
+        trainResults.insert(trainResults.end(), out.begin(), out.end());
+    }
+    Matrix<int> trainRes(1,trainResults.size(), {trainResults});
+    trainRes = trainRes.transpose();
+
+    Matrix<double> trainLabelsRes = csv.load(trainLabelsPath,trainPart);
+    double trainAcc = myNet.accuracy(trainRes,trainLabelsRes);
+    cout << "Accuracy: "<< trainAcc;
+
+    csv.save("../../trainPredictions.txt",trainRes);
+
     auto stop = chrono::high_resolution_clock::now();
     auto durationMicro = chrono::duration_cast<chrono::microseconds>(stop - start);
     auto durationSec = chrono::duration_cast<chrono::seconds>(stop - start);
@@ -148,6 +169,8 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
     cout << "Training took: "<<durationMicro.count() << " microseconds => "<<durationSec.count()<< " seconds => " << durationMin.count() << " minutes\n";
 
     Matrix<double> testVectors = csv.load(testDataPath,testPart);
+    testVectors = sc.scale(testVectors);
+
     vector<Matrix<double>> batchesTest = testVectors.splitToBatches(testBatch);
     Matrix<double> testLabels = csv.load(testLabelsPath,testPart);
 
@@ -175,7 +198,7 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
 
 
 //    csv.save("../results/test1.txt",res);
-    csv.save("../results/test1.txt",res);
+    csv.save("../../actualTestPredictions.txt",res);
 
     auto stop3 = chrono::high_resolution_clock::now();
     auto durationSec3 = chrono::duration_cast<chrono::seconds>(stop3 - start3);
@@ -184,7 +207,7 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
          durationSec3.count()<< " seconds => " << durationMin3.count() << " minutes\n";
 }
 
-
+//does not work
 void runXor(const int& numEpochs, const int& batchSize, const vector<int>& topology, const double&learningRate) {
     auto start3 = chrono::high_resolution_clock::now();
 
@@ -219,7 +242,7 @@ void runXor(const int& numEpochs, const int& batchSize, const vector<int>& topol
             cout << j << " ";
             myNet.forward(batches[j]);
 
-            sum_losses += myNet.backward(batchesLabels[j]);
+            sum_losses += myNet.backward(batchesLabels[j],i);
 //            cout << "s: "<< sum_losses;
         }
         cout << endl;

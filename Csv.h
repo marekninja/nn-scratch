@@ -15,13 +15,13 @@ public: Csv();
     ///Loads csv file into vector of vectors
     ///Does not support headers
     /// Matrix is [1row x NumExamples Cols]
-    Matrix<double> load(const string& path_to_file, const int& part=INT32_MAX);
+    Matrix<double> load(const std::string& path_to_file, const int& part=INT32_MAX);
 
-    Matrix<double> loadOneHot(const string& path_to_file, const int& part=INT32_MAX);
+    Matrix<double> loadOneHot(const std::string& path_to_file, const int& part=INT32_MAX);
 
     ///Saves data into csv file
     ///Does not create headers
-    void save(const string& path_to_file,const Matrix<int>& data);
+    void save(const std::string& path_to_file,const Matrix<int>& data);
 
     ///Scales dataset by scaleVal
     ///Scaling is division: old/scaleVal=scaledVal
