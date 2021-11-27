@@ -422,6 +422,45 @@ public:
         return result;
     }
 
+    Matrix<T> addNumAlloc(const double & num){
+        Matrix result(numRows, numCols);
+
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result(i,j) = result(i,j) + col(i,0);
+                result(i,j) = matData[i][j] + num;
+            }
+        }
+        return result;
+    }
+
+    void addNum(const double & num){
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result(i,j) = result(i,j) + col(i,0);
+                matData[i][j] += num;
+            }
+        }
+    }
+
+    Matrix<T> divideCellsAlloc(const Matrix& m){
+        Matrix result(numRows, numCols);
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                result(i,j) = matData[i][j] / m(i,j);
+//                matData[i][j] += num;
+            }
+        }
+    }
+
+    void divideCells(const Matrix& m){
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                matData[i][j] /= m(i,j);
+            }
+        }
+    }
+
 
     void apply(std::function<T(const T&)> func){
 //        cout << "appy relu" << endl;
@@ -432,6 +471,16 @@ public:
             }
         }
     }
+
+//    void apply(std::function<T(T)> func){
+////        cout << "appy relu" << endl;
+//
+//        for (int i = 0; i < numRows; ++i) {
+//            for (int j = 0; j < numCols; ++j) {
+//                matData[i][j] = func(matData[i][j]);
+//            }
+//        }
+//    }
 
     void apply(std::function<T(const int& seed, const int& incoming, const int& cols)> func, const int& seed, const int& incoming, const int& cols){
 //        cout << "apply softmax" << endl;

@@ -7,10 +7,10 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include <cstdlib>
+//#include <cstdlib>
 
 
-double random(const double &example){
+double randomne(const double &example){
     return (double)rand()/RAND_MAX + 1e-15;
 }
 
@@ -19,7 +19,7 @@ void runTests(){
     vector<vector<double>> data;
     for (int j = 0; j < size; ++j) {
         vector<double> row(size);
-        std::transform(row.begin(), row.end(), row.begin(), ::random);
+        std::transform(row.begin(), row.end(), row.begin(), ::randomne);
         data.push_back(row);
     }
     Matrix<double> mat(size,size,data);
@@ -98,7 +98,7 @@ void runBenchmarks(){
 }
 
 void runTraining(const string& trainDataPath,const string& trainLabelsPath, const string& testDataPath, const string& testLabelsPath,
-                 const vector<int>& topology, const double&learningRate,
+                 const vector<int>& topology, const double&learningRate, const int& lr_change_interval, const int& lr_change_stop_int,
                  const int& trainPart, const int &batchSize,const int&numEpochs, const int& testPart, const int& testBatch){
 
     auto start3 = chrono::high_resolution_clock::now();
@@ -119,7 +119,7 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
     double learning_rate = learningRate;
     for (int i = 0; i < epochs; ++i) {
 
-        if (i < 7 &&(i % 2 == 0) && (i != 0)){
+        if (i < lr_change_stop_int &&(i % lr_change_interval == 0) && (i != 0)){
             learning_rate /= 10;
             myNet.setLearningRate(learning_rate);
         }
@@ -174,7 +174,8 @@ void runTraining(const string& trainDataPath,const string& trainLabelsPath, cons
     cout << "Accuracy: "<< acc;
 
 
-    csv.save("..\\results\\test1.txt",res);
+//    csv.save("../results/test1.txt",res);
+    csv.save("../results/test1.txt",res);
 
     auto stop3 = chrono::high_resolution_clock::now();
     auto durationSec3 = chrono::duration_cast<chrono::seconds>(stop3 - start3);

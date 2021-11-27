@@ -42,14 +42,15 @@ private:
     /// only for storage purps.
     vector<Matrix<double>> innerPotentials;
 
-    double Vdw = 0.0;
-    double Sdw = 0.0;
-    double Vdb = 0.0;
-    double Sdb = 0.0;
+    vector<Matrix<double>> Vdw;
+    vector<Matrix<double>> Sdw;
+    vector<Matrix<double>> Vdb;
+    vector<Matrix<double>> Sdb;
     double beta1;
     double beta2;
     double epsilon;
     int seed = 5;
+    int epoch = 0;
 
     static void initRelu(Matrix<double>& weights, const int& seed, const int& incoming, const int& cols);
     static void initSoftmax(Matrix<double>& weights, const int& seed, const int& incoming, const int& cols);

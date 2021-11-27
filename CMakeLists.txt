@@ -8,6 +8,7 @@ include_directories(.)
 add_executable(pv021_project
         main.cpp
         main.h
+#        NetAdam.cpp
         Net.cpp
         Net.h
         Csv.cpp

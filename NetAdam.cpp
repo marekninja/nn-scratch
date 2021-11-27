@@ -13,21 +13,23 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
 
     batchSize = batch_size;
     learningRate = learning_rate;
-//    Vdw = 0.0;
-//    Sdw = 0.0;
-//    Vdb = 0.0;
-//    Sdb = 0.0;
+
     beta1 = beta_1;
     beta2 = beta_2;
     epsilon = epsilon_v;
-//    seed = 5;
-    seed = 42;
+    seed = 5;
+    epoch = 0;
 
 
     weightMatrices.resize(size);
     activations.resize(size);
     innerPotentials.resize(size);
     biasMatrices.resize(size);
+
+    Vdw.resize(size);
+    Sdw.resize(size);
+    Vdb.resize(size);
+    Sdb.resize(size);
 
     //init of weights and biases - input neurons do not have it
     for (int i = 1; i -1 < arch.size()-1; ++i) {
@@ -45,6 +47,17 @@ Net::Net(const vector<int> &arch, const int &batch_size, const double &learning_
 
         weightMatrices[i] = weights;
         biasMatrices[i]=biases.transpose();
+    }
+
+    for (int i = 1; i -1 < arch.size()-1; ++i) {
+        Matrix<double> weights1(architecture[i],architecture[i-1]);
+        Matrix<double> weights2(architecture[i],architecture[i-1]);
+        Matrix<double> biases1(architecture[i],1);
+        Matrix<double> biases2(architecture[i],1);
+        Vdw[i] = weights1;
+        Sdw[i] = weights2;
+        Vdb[i] = biases1;
+        Sdb[i] = biases2;
     }
 }
 
@@ -223,12 +236,12 @@ double Net::backward(Matrix<double> &target){
 //    cout << "back" << endl;
 //    cout<< "L: " << loss<<" ";
 
-//    Matrix<double> dZ = activations.back().minusAlloc(target.transpose());
     Matrix<double> dZ = activations.back();
     dZ.minus(target.transpose());
 
     Matrix<double> dW;
     Matrix<double> dB;
+    epoch ++;
 
     for (int i = architecture.size()-1; i > 0 ; --i) {
 //        z = y = vysledok aktivacnej f.
@@ -239,11 +252,25 @@ double Net::backward(Matrix<double> &target){
         dW = dZ.multiply(activations[i-1].transpose());
         //TODO: toto je navyse lebo batch size
 
-
         dB = dZ;
         dB.flatMeanRows();
-        dB.multiplyNum(learningRate);
-        biasMatrices[i].minus(dB);
+
+        Vdw[i].multiplyNum(beta1);
+        Vdw[i] = Vdw[i].add(dW.multiplyNumAlloc(1-beta1));
+        Vdb[i].multiplyNum(beta1);
+        Vdb[i] = Vdb[i].add(dB.multiplyNumAlloc(1-beta1));
+
+        Sdw[i].multiplyNum(beta2);
+        Sdw[i] = Sdw[i].add(dW.multiplyCellsAlloc(dW).multiplyNumAlloc(1-beta2));
+        Sdb[i].multiplyNum(beta2);
+        Sdb[i] = Sdb[i].add(dB.multiplyCellsAlloc(dB).multiplyNumAlloc(1-beta2));
+
+        //correction
+        Matrix<double> Vdw_corr =  Vdw[i].multiplyNumAlloc(1/(1- pow(beta1,epoch)));
+        Matrix<double> Vdb_corr = Vdb[i].multiplyNumAlloc(1/(1- pow(beta1,epoch)));
+
+        Matrix<double> Sdw_corr = Sdw[i].multiplyNumAlloc(1/(1-pow(beta2,epoch)));
+        Matrix<double> Sdb_corr = Sdb[i].multiplyNumAlloc(1/(1-pow(beta2,epoch)));
 
         if (i > 1){
             innerPotentials[i-1].apply(drelu);
@@ -251,11 +278,29 @@ double Net::backward(Matrix<double> &target){
             dZ = weightMatrices[i].transpose().multiply(dZ);
             dZ.multiplyCells(innerPotentials[i-1]);
         }
+//        updates
+//        TODO: toto moze byt problem - sqrtl vracia long double
+        Sdw_corr.apply(sqrtl);
+        Sdw_corr.addNum(epsilon);
+        Vdw_corr.divideCells(Sdw_corr);
+        Vdw_corr.multiplyNum(learningRate);
+        weightMatrices[i].minus(Vdw_corr);
 
-        dW.multiplyNum(1/batchSize);
+        Sdb_corr.apply(sqrtl);
+        Sdb_corr.addNum(epsilon);
+        Vdb_corr.divideCells(Sdb_corr);
+        Vdb_corr.multiplyNum(learningRate);
+        biasMatrices[i].minus(Vdb_corr);
 
-        dW.multiplyNum(learningRate);
-        weightMatrices[i].minus(dW);
+//        // update biases
+//        dB.flatMeanRows();
+//        dB.multiplyNum(learningRate);
+//        biasMatrices[i].minus(dB);
+//
+//        // update weights
+//        dW.multiplyNum(1/batchSize);
+//        dW.multiplyNum(learningRate);
+//        weightMatrices[i].minus(dW);
 
     }
     double loss = batchCrossEntropy(target);
@@ -264,7 +309,6 @@ double Net::backward(Matrix<double> &target){
 //    cout<< "A: " <<acc<<" " << endl;
     return loss;
 }
-
 
 
 Matrix<int> Net::results() {
