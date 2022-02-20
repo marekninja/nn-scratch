@@ -8,10 +8,20 @@ include_directories(.)
 add_executable(pv021_project
         main.cpp
         main.h
+#        NetAdam.cpp
         Net.cpp
-#        NetThread.cpp
         Net.h
         Csv.cpp
         Csv.h
 #        Operations.hpp
-        OperationsThreads.hpp)
+        OperationsThreads.hpp
+        Scaler.cpp
+        Scaler.h
+        kaiming.cpp
+        kaiming.h
+        xavier.cpp
+        xavier.h
+        adam.cpp
+        adam.h
+        Scenario.h
+        Scenario.cpp)

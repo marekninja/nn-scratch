@@ -10,17 +10,16 @@ using namespace std;
 #include <sstream>
 
 
-Csv::Csv() {
-}
+Csv::Csv() = default;
 
 Matrix<double> Csv::load(const string& path_to_file, const int& part) {
-    cout << "loading dataset..." << endl;
+    cout << "loading dataset... => " << path_to_file << endl;
 
     ifstream inputFile(path_to_file);
 
     if (!inputFile.is_open()) {
         throw runtime_error("Could not open file!");
-    };
+    }
 
     vector <vector<double>> output;
     string line;
@@ -55,7 +54,7 @@ Matrix<double> Csv::loadOneHot(const string& path_to_file, const int& part) {
 
     if (!inputFile.is_open()) {
         throw runtime_error("Could not open file!");
-    };
+    }
 
     vector <vector<double>> output;
     string line;
@@ -68,7 +67,6 @@ Matrix<double> Csv::loadOneHot(const string& path_to_file, const int& part) {
 
         while (getline(ss, valString, ',')) {
             oneLine[stoi(valString)] = 1;
-//            oneLine.push_back(stod(valString, nullptr));
         }
 
         output.push_back(oneLine);
@@ -83,14 +81,14 @@ Matrix<double> Csv::loadOneHot(const string& path_to_file, const int& part) {
     return dataset;
 }
 
-void Csv::save(string path_to_file,const Matrix<int>& data) {
+void Csv::save(const string& path_to_file,const Matrix<int>& data) {
     cout << "saving dataset..." << endl;
 
     ofstream outputFile(path_to_file);
 
     if (!outputFile.is_open()) {
         throw runtime_error("Could not open file!");
-    };
+    }
 
     vector <vector<int>> output;
     string line;

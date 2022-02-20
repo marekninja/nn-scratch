@@ -1,12 +1,13 @@
 //
 // Created by marek on 10/27/2021.
 //
-#pragma GCC optimize("Ofast")
+//#pragma GCC optimize("Ofast")
 using namespace std;
 #include <vector>
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <cmath>
 #include <thread>
 #define THREAD_ROWS 20
 
@@ -25,8 +26,6 @@ public:
         matData.resize(num_rows);
 
         for (int i = 0; i < matData.size(); ++i) {
-            //TODO: treba skontrolovat, ze ci nema byt nula nastavena
-            //matData[i].resize(num_cols,0.0);
             matData[i].resize(num_cols);
         }
 
@@ -222,6 +221,24 @@ public:
         return result;
     };
 
+    Matrix<T> devideNaiveAlloc(const Matrix &other){
+
+        if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
+            throw runtime_error("Can not devide() matrices of different shape!");
+        }
+        int cols = numCols;
+        int rows = numRows;
+        Matrix result(rows, cols);
+
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                result(i,j) += matData[i][j] / other(i,j);
+            }
+        }
+
+        return result;
+    };
+
     Matrix<T> transpose(){
         Matrix result(numCols, numRows);
 
@@ -298,7 +315,6 @@ public:
         Matrix result(numRows, numCols);
         for (int i = 0; i < numRows; ++i) {
             for (int j = 0; j < numCols; ++j) {
-//                result.matData[i][j] = this->matData[i][j] + other.matData[i][j];
                 result(i,j) = matData[i][j] * num;
             }
         }
@@ -314,8 +330,57 @@ public:
         }
     }
 
+    Matrix<T> matrixPowAlloc(const int &power){
+        Matrix result(numRows, numCols);
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                result(i,j) = pow(matData[i][j], power);
+            }
+        }
+        return result;
+    }
 
-    Matrix<T> add(const Matrix &other){
+    void matrixPow(const int &power){
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                matData[i][j] = pow(matData[i][j], power);
+            }
+        }
+    }
+
+    Matrix<T> matrixSqrtAlloc(){
+        Matrix result(numRows, numCols);
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                result(i,j) = sqrt(matData[i][j]);
+            }
+        }
+        return result;
+    }
+
+    void matrixSqrt(){
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                matData[i][j] = sqrt(matData[i][j]);
+            }
+        }
+    }
+
+    void add(const Matrix &other){
+        if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
+            throw runtime_error("Can not add() matrices of different shape!");
+        }
+        int cols = numCols;
+        int rows = numRows;
+
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                this->matData[i][j] += other(i,j);
+            }
+        }
+    };
+
+    Matrix<T> addAlloc(const Matrix &other){
         if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
             throw runtime_error("Can not add() matrices of different shape!");
         }
@@ -374,8 +439,6 @@ public:
         if (this->getNumRows() != other.getNumRows() || this->getNumCols() != other.getNumCols()){
             throw runtime_error("Can not add() matrices of different shape!");
         }
-        int cols = numCols;
-        int rows = numRows;
 
         vector<thread> threads;
         int threadCount = thread::hardware_concurrency();
@@ -399,8 +462,6 @@ public:
 
     //Addition of 1 row matrix to every row
     void addToCol(Matrix& col){
-        int cols = numCols;
-        int rows = numRows;
 //        Matrix result(rows, cols);
 
         for (int i = 0; i < numRows; ++i) {
@@ -426,6 +487,45 @@ public:
         return result;
     }
 
+    Matrix<T> addNumAlloc(const double & num){
+        Matrix result(numRows, numCols);
+
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result(i,j) = result(i,j) + col(i,0);
+                result(i,j) = matData[i][j] + num;
+            }
+        }
+        return result;
+    }
+
+    void addNum(const double & num){
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+//                result(i,j) = result(i,j) + col(i,0);
+                matData[i][j] += num;
+            }
+        }
+    }
+
+    Matrix<T> divideCellsAlloc(const Matrix& m){
+        Matrix result(numRows, numCols);
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                result(i,j) = matData[i][j] / m(i,j);
+//                matData[i][j] += num;
+            }
+        }
+    }
+
+    void divideCells(const Matrix& m){
+        for (int i = 0; i < numRows; ++i) {
+            for (int j = 0; j < numCols; ++j) {
+                matData[i][j] /= m(i,j);
+            }
+        }
+    }
+
 
     void apply(std::function<T(const T&)> func){
 //        cout << "appy relu" << endl;
@@ -437,10 +537,22 @@ public:
         }
     }
 
-    void apply(std::function<void (vector<T>&)> func){
+//    void apply(std::function<T(T)> func){
+////        cout << "appy relu" << endl;
+//
+//        for (int i = 0; i < numRows; ++i) {
+//            for (int j = 0; j < numCols; ++j) {
+//                matData[i][j] = func(matData[i][j]);
+//            }
+//        }
+//    }
+
+    void apply(std::function<T(const int& seed, const int& incoming, const int& cols)> func, const int& seed, const int& incoming, const int& cols){
 //        cout << "apply softmax" << endl;
         for (int i = 0; i < numRows; ++i) {
-            func(matData[i]);
+            for (int j = 0; j < numCols; ++j) {
+                matData[i][j] = func(seed, incoming, cols);
+            }
         }
     }
 
@@ -458,6 +570,7 @@ public:
 
 
     vector<Matrix<T>> splitToBatches(int batch_size){
+
         if (numRows% batch_size != 0){
             throw runtime_error("Can not divide into batches!");
         }

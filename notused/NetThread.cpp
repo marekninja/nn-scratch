@@ -80,7 +80,6 @@ void Net::softmax(vector<double>& output) {
 }
 
 void Net::dsoftmax(vector<double>& output) {
-    double sum = 0;
     for (int i = 0; i < output.size(); ++i) {
         output[i] = output[i] *( 1 - output[i]);
     }
