@@ -1,4 +1,6 @@
-# Source code
-What a great place to put your solution!
+## Feed Forward NN from scratch
 
-repo: https://github.com/marekninja/nn-scratch
+* without any external libraries
+* intended for learning of 
+  * the internals of nn
+  * matrix operations optimization
